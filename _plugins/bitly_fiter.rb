@@ -36,9 +36,8 @@ module Jekyll
   class BitlyFilterCache
     def initialize
       @result_cache = {}
-      config = Jekyll.configuration({})
-      @username = config['bitly']['username']
-      @key = config['bitly']['api_key']
+      @username = ENV['BITLY_USERNAME']
+      @key = ENV['BITLY_API_KEY']
       Bitly.use_api_version_3
     end
 

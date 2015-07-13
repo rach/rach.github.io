@@ -488,11 +488,10 @@ Post List
 }
 
 #sharing a {
-	font-size: 20px;
-	font-size: 23px;
-	margin-left: 1px;
-	margin-top: 4px;
-	color: #d4d4d4;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 0px 5px;
+  margin-left: 2px;
 	display: inline-block;
 	vertical-align: middle;
 }
@@ -615,22 +614,7 @@ h2.month {
 #post-list.archive.readmore .dates{
 	font: 300 16px/1.6 "Helvetica Neue",helvetica,Arial,sans-serif;
 }
-#sharing a.facebook {
-  background: #4361b3;
-}
-#sharing a.twitter {
-  background: #4fafed;
-}
 
-#sharing a {
-  font-size: 20px;
-  font-size: 13px;
-  font-weight: bold;
-  color: #fff;
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-left: 2px;
-}
 
 /* Media Queries */
 @media screen and (max-width: 540px) {

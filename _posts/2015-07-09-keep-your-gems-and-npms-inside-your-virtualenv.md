@@ -2,6 +2,7 @@
 title:  "Keep your gems and npms inside your virtualenv"
 date:   2015-07-09
 description: Nobody want having their gems or npms wondering around. Keep them tidy inside your virtualenv.  
+share: true
 ---
 
 Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  
@@ -36,7 +37,9 @@ If you are using [direnv](direnv) then you can copy the script into your `.envrc
 
 This is an updated version of an older post from my previous blog but the infos is still actual as I'm still using a similar technique when jungling between different projects. 
 
-This technique as the trade off of not doing any tidying after itself when deactivating the virtualenv and keeping the environment variables. I'm using virtualenwrapper so I developed 2 small plugins: [virtualenv.npm](virtualenv-npm), [virtualenv.npm](virtualenv-npm)); which allows to do the same but also handle the cleaning when you deactivate the virtualenv.
+This technique as the trade off of not doing any tidying after itself when deactivating the virtualenv and keeping the environment variables. 
+
+I'm using virtualenwrapper so I developed 2 small plugins: [virtualenv.npm](virtualenv-npm), [virtualenv.npm](virtualenv-npm)); which allows to do the same but also handle the cleaning when you deactivate the virtualenv.
 
 [virtualenv]:   https://pypi.python.org/pypi/virtualenv 
 [virtualenvwrapper]:   https://pypi.python.org/pypi/virtualenvwrapper 

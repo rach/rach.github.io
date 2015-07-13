@@ -2,6 +2,7 @@
 title:  "Handling Go workspace with direnv"
 date:   2015-06-28
 description: Bringing some sanity into your go projects 
+share: true
 ---
 
 You'll find this post in your `_posts` directory - edit this post and re-build (or run with the `-w` switch) to see your changes!
