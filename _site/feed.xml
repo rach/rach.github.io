@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Maybe a -&gt; Blog</title>
+    <description>Blogging about stuffs</description>
+    <link>http://rachbelaid.com</link>
+    <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
+    
+      <item>
+        <title>Postgres full-text search is Good Enough!</title>
+        
+        
+          <description>&lt;p&gt;When you have to build a web application, you are often asked to add search. The magnifying glass is something that we now add to wireframes without even knowing what we are going to search.&lt;/p&gt;
+</description>
+        
+        <pubDate>Mon, 13 Jul 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</guid>
+      </item>
+    
+      <item>
+        <title>Using Git Subtree to create branches from a directory</title>
+        
+        
+          <description>&lt;p&gt;This post is about using &lt;code&gt;git subtree merge&lt;/code&gt; to have a branch that is a subset of another branch. 
+Github will be a use case and act as a way to illustrate this feature, there are probably other
+ways to accomplish the same result.&lt;/p&gt;
+</description>
+        
+        <pubDate>Sat, 11 Jul 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/git-subtree-to-create-a-branch-from-subfolder/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/git-subtree-to-create-a-branch-from-subfolder/</guid>
+      </item>
+    
+      <item>
+        <title>Virtualenvwrapper plugins for gems and npms</title>
+        
+        
+          <description>&lt;p&gt;In a previous &lt;a href=&quot;/2015/keep-your-gems-and-npms-inside-your-virtualenv/&quot;&gt;post&lt;/a&gt;, we&amp;#39;ve seen how to modify your activate script to keep inside a virtualenv the packages from Node and Ruby called gems and npms. I find useful to be able to try gems or npms inside a virtualenv without contaminate your setup.  &lt;/p&gt;
+</description>
+        
+        <pubDate>Fri, 10 Jul 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/virtualenvwrapper-plugins-for-gems-and-npms/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/virtualenvwrapper-plugins-for-gems-and-npms/</guid>
+      </item>
+    
+      <item>
+        <title>Keep your gems and npms inside your virtualenv</title>
+        
+        
+          <description>&lt;p&gt;Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  &lt;/p&gt;
+</description>
+        
+        <pubDate>Thu, 09 Jul 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/keep-your-gems-and-npms-inside-your-virtualenv/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/keep-your-gems-and-npms-inside-your-virtualenv/</guid>
+      </item>
+    
+      <item>
+        <title>Handling Go workspace with direnv</title>
+        
+        
+          <description>&lt;p&gt;You&amp;#39;ll find this post in your &lt;code&gt;_posts&lt;/code&gt; directory - edit this post and re-build (or run with the &lt;code&gt;-w&lt;/code&gt; switch) to see your changes!
+To add new posts, simply add a file in the &lt;code&gt;_posts&lt;/code&gt; directory that follows the convention: YYYY-MM-DD-name-of-post.ext.&lt;/p&gt;
+</description>
+        
+        <pubDate>Sun, 28 Jun 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/handling-go-workspace-with-direnv/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/handling-go-workspace-with-direnv/</guid>
+      </item>
+    
+  </channel>
+</rss>
