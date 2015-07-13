@@ -19,7 +19,7 @@
       </item>
     
       <item>
-        <title>Using Git Subtree to create branches from a directory</title>
+        <title>Git Subtree to create branches from subfolder</title>
         
         
           <description>&lt;p&gt;This post is about using &lt;code&gt;git subtree merge&lt;/code&gt; to have a branch that is a subset of another branch. 
