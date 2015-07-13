@@ -1,5 +1,5 @@
 ---
-title:  "Using Git Subtree to create branches from a directory"
+title:  "Git Subtree to create branches from subfolder"
 date:   2015-07-11
 description: It's sometimes usefull to have an asymetric branch which is represent an output folder  
 share: true
