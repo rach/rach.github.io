@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Maybe a -> Blog - Postgres full-text search is Good Enough!</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href='/'> <span class="arrow">←</span> Home </a>
+    
+
+    
+        
+            <a href='/about'>About </a>
+        
+    
+</nav>
+
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Postgres full-text search is Good Enough!</h1>
+        <h2 class="headline">July 13, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>When you have to build a web application, you are often asked to add search. The magnifying glass is something that we now add to wireframes without even knowing what we are going to search.</p>
+
+<p>Search has became an important feature and we&#39;ve seen a big increase in the popularity of tools like <a href="http://elasticsearch.org/">elasticsearch</a> and <a href="https://lucene.apache.org/solr/">SOLR</a> which are both based on <a href="https://lucene.apache.org/">lucene</a>. They are great tools but before going down the road of Weapons of Mass ~~Destruction~~ Search, maybe what you need is something a bit lighter which is simply <strong>good enough</strong>! </p>
+
+<p>What do you I mean by &#39;good enough&#39;? I mean a search engine with the following features:</p>
+
+<ul>
+<li><a href="http://en.wikipedia.org/wiki/Stemming">Stemming</a></li>
+<li>Ranking / Boost</li>
+<li>Support Multiple languages</li>
+<li>Fuzzy search for mispelling </li>
+<li>Accent support </li>
+</ul>
+
+<p>Luckily PostgreSQL supports all these features.</p>
+
+<p>This post is aimed at people who :</p>
+
+<ul>
+<li>use PostgreSQL and don&#39;t want to install an extra dependency for their search engine.</li>
+<li>use an alternative database (eg: MySQL) and have the need for better full-text search features. </li>
+</ul>
+
+<p>In this post we are going to progressively illustrate some of the full-text search features in Postgres based on the following tables and data:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE TABLE author(
+   id SERIAL PRIMARY KEY,
+   name TEXT NOT NULL
+);
+
+CREATE TABLE post(
+   id SERIAL PRIMARY KEY,
+   title TEXT NOT NULL,
+   content TEXT NOT NULL,
+   author_id INT NOT NULL references author(id) 
+);
+
+CREATE TABLE tag(
+   id SERIAL PRIMARY KEY,
+   name TEXT NOT NULL 
+);
+
+CREATE TABLE posts_tags(
+   post_id INT NOT NULL references post(id),
+   tag_id INT NOT NULL references tag(id)
+ );
+
+INSERT INTO author (id, name) 
+VALUES (1, &#39;Pete Graham&#39;), 
+       (2, &#39;Rachid Belaid&#39;), 
+       (3, &#39;Robert Berry&#39;);
+
+INSERT INTO tag (id, name) 
+VALUES (1, &#39;scifi&#39;), 
+       (2, &#39;politics&#39;), 
+       (3, &#39;science&#39;);
+
+INSERT INTO post (id, title, content, author_id) 
+VALUES (1, &#39;Endangered species&#39;, &#39;Pandas are an endangered species&#39;, 1 ), 
+       (2, &#39;Freedom of Speech&#39;, &#39;Freedom of speech is a necessary right missing in many countries&#39;, 2), 
+       (3, &#39;Star Wars vs Star Trek&#39;, &#39;Few words from a big fan&#39;, 3);
+
+
+INSERT INTO posts_tags (post_id, tag_id) 
+VALUES (1, 3), 
+       (2, 2), 
+       (3, 1);
+</code></pre></div>
+<p>It&#39;s a traditional blog-like application with <code>post</code> objects, which have a <code>title</code> and <code>content</code>. A <code>post</code> is associated to an <code>author</code> via a foreign key. A <code>post</code> itself can have multiple tags  </p>
+
+<h3>What is Full-Text Search.</h3>
+
+<p>First, let&#39;s look at the definition:</p>
+
+<blockquote>
+<p>In text retrieval, <strong>full-text search</strong> refers to techniques for searching a single computer-stored <strong>document</strong> or a collection in a full text database. Full-text search is distinguished from searches based on metadata or on parts of the original texts represented in databases.</p>
+
+<p>-- <a href="http://en.wikipedia.org/wiki/Full_text_search">Wikipedia</a></p>
+</blockquote>
+
+<p>This definition introduces the concept of a document, which is important. When you run a search accross your data, you are looking into meaningful entities for which you want to search, these are your documents! The PostgreSQL documentation explains it amazingly.</p>
+
+<blockquote>
+<p>A document is the unit of searching in a full text search system; for example, a magazine article or email message. </p>
+
+<p>-- <site><a href="http://www.postgresql.org/docs/9.3/static/textsearch-intro.html#TEXTSEARCH-DOCUMENT">Postgres documentation</a></p>
+</blockquote>
+
+<p>This document can be accross multiple tables and it represents a logical entity which we want to search for.</p>
+
+<h3>Build our document</h3>
+
+<p>In the previous section we introduced the concept of document. A document is not related to our table schema but to data; together these represent a meaningful object.
+Based on our example schema, the document is composed of:</p>
+
+<ul>
+<li><code>post.title</code></li>
+<li><code>post.content</code></li>
+<li><code>author.name</code> of the <code>post</code></li>
+<li>all <code>tag.name</code>s associated to the <code>post</code></li>
+</ul>
+
+<p>To create our document based on this criteria imagine this SQL query:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text"> SELECT post.title || &#39; &#39; || 
+        post.content || &#39; &#39; ||
+        author.name || &#39; &#39; ||
+        coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;) as document
+ FROM post
+ JOIN author ON author.id = post.author_id
+ JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+ JOIN tag ON tag.id = posts_tags.tag_id
+ GROUP BY post.id, author.id;
+
+               document
+ --------------------------------------------------
+ Endangered species Pandas are an endangered species Pete Graham politics
+ Freedom of Speech Freedom of speech is a necessary right missing in many countries Rachid Belaid politics
+ Star Wars vs Star Trek Few words from a big fan Robert Berry politics
+(3 rows)
+</code></pre></div>
+<p>As we are grouping by <code>post</code> and <code>author</code>, we are using <code>string_agg()</code> as the aggregate function because multiple <code>tag</code> can be associated to a <code>post</code>. Even if <code>author</code> is a foreign key and a <code>post</code> cannot have more than one <code>author</code>, it is required to add an aggregate function for <code>author</code> or to add <code>author</code> to the <code>GROUP BY</code>.</p>
+
+<p>We also used <code>coalesce()</code>. When a value can be <code>NULL</code> then it&#39;s good practice to use the <code>coalesce()</code> function, otherwise the concatenation will result in a <code>NULL</code> value too.</p>
+
+<p>At this stage our document is simply a long <code>string</code> and this doesn&#39;t help us; we need to transform it into the right format via the function <code>to_tsvector()</code>.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.title) || 
+       to_tsvector(post.content) ||
+       to_tsvector(author.name) ||
+       to_tsvector(coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;)) as document
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON tag.id = posts_tags.tag_id
+GROUP BY post.id, author.id;
+
+               document
+ --------------------------------------------------
+ &#39;endang&#39;:1,6 &#39;graham&#39;:9 &#39;panda&#39;:3 &#39;pete&#39;:8 &#39;polit&#39;:10 &#39;speci&#39;:2,7
+ &#39;belaid&#39;:16 &#39;countri&#39;:14 &#39;freedom&#39;:1,4 &#39;mani&#39;:13 &#39;miss&#39;:11 &#39;necessari&#39;:9 &#39;polit&#39;:17 &#39;rachid&#39;:15 &#39;right&#39;:10 &#39;speech&#39;:3,6
+&#39;berri&#39;:13 &#39;big&#39;:10 &#39;fan&#39;:11 &#39;polit&#39;:14 &#39;robert&#39;:12 &#39;star&#39;:1,4 &#39;trek&#39;:5 &#39;vs&#39;:3 &#39;war&#39;:2 &#39;word&#39;:7
+(3 rows)         
+</code></pre></div>
+<p>This query will return our document as <code>tsvector</code> which is a type suited to full-text search. Let&#39;s try to convert a simple string into a tsvector.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;Try not to become a man of success, but rather try to become a man of value&#39;);
+</code></pre></div>
+<p>The query will return the following result:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">                             to_tsvector
+----------------------------------------------------------------------
+&#39;becom&#39;:4,13 &#39;man&#39;:6,15 &#39;rather&#39;:10 &#39;success&#39;:8 &#39;tri&#39;:1,11 &#39;valu&#39;:17
+(1 row)
+</code></pre></div>
+<p>Something weird just happened. First there are less words than in the original sentence, some of the words are different (<code>try</code> became <code>tri</code>) and they are all followed by numbers. Why?</p>
+
+<p>A <code>tsvector</code> value is a sorted list of distinct lexemes which are words that have been normalized to make different variants of the same word look alike.
+For example, normalization almost always includes folding upper-case letters to lower-case and often involves removal of suffixes (such as &#39;s&#39;, &#39;es&#39; or &#39;ing&#39; in English). This allows searches to find variant forms of the same word without tediously entering all the possible variants.</p>
+
+<p>The numbers represent the location of the lexeme in the original string. For example, &quot;man&quot; is present at position 6 and 15. Try counting the words and see for yourself.</p>
+
+<p>By default Postgres uses <code>&#39;english&#39;</code> as text search configuration for the function <code>to_tsvector</code> and it will also ignore english stopwords. 
+That explains why the <code>tsvector</code> results have less elements than the ones in our sentence. We see later a bit more about languages and text search configuration.</p>
+
+<h3>Querying</h3>
+
+<p>We have seen how to build a document but the goal here is to find the document. For running a query against a <code>tsvector</code> we can use the <code>@@</code> operator which is documented <a href="http://www.postgresql.org/docs/9.3/static/functions-textsearch.html#FUNCTIONS-TEXTSEARCH">here</a>. Let&#39;s see some examples on how to query our document.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; select to_tsvector(&#39;If you can dream it, you can do it&#39;) @@ &#39;dream&#39;;
+ ?column?
+----------
+ t
+(1 row)
+
+&gt; select to_tsvector(&#39;It&#39;&#39;s kind of fun to do the impossible&#39;) @@ &#39;impossible&#39;;
+
+ ?column?
+----------
+ f
+(1 row)
+</code></pre></div>
+<p>The second query returns false because we need to build a <code>tsquery</code> which creates the same lexemes and, using the operator <code>@@</code>, casts the string into a tsquery. The following shows the difference between casting and using the function <code>to_tsquery()</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT &#39;impossible&#39;::tsquery, to_tsquery(&#39;impossible&#39;);
+   tsquery    | to_tsquery
+--------------+------------
+ &#39;impossible&#39; | &#39;imposs&#39;
+(1 row)
+</code></pre></div>
+<p>But in the case of &#39;dream&#39; the stem is equal to the word.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT &#39;dream&#39;::tsquery, to_tsquery(&#39;dream&#39;);
+   tsquery    | to_tsquery
+--------------+------------
+ &#39;dream&#39;      | &#39;dream&#39;
+(1 row)
+</code></pre></div>
+<p>From now on we will use <code>to_tsquery</code> for querying documents.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;It&#39;&#39;s kind of fun to do the impossible&#39;) @@ to_tsquery(&#39;impossible&#39;);
+
+ ?column?
+----------
+ t
+(1 row)
+</code></pre></div>
+<p>A tsquery value stores lexemes that are to be searched for, and combines them honoring the Boolean operators &amp; (AND), | (OR), and ! (NOT). Parentheses can be used to enforce grouping of the operators</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; SELECT to_tsvector(&#39;If the facts don&#39;t fit the theory, change the facts&#39;) @@ to_tsquery(&#39;! fact&#39;);
+
+ ?column?
+----------
+ f
+(1 row)
+
+&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts&#39;) @@ to_tsquery(&#39;theory &amp; !fact&#39;);
+
+ ?column?
+----------
+ f
+(1 row)
+
+&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;) @@ to_tsquery(&#39;fiction | theory&#39;);
+
+ ?column?
+----------
+ t
+(1 row)
+</code></pre></div>
+<p>We can also use startwith query style when using <code>:*</code>.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;) @@ to_tsquery(&#39;theo:*&#39;);
+
+ ?column?
+----------
+ t
+(1 row)
+</code></pre></div>
+<p>Now that we know how to make a full-text search query, we can come back to our initial table schema and try to query our documents.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT pid, p_title
+FROM (SELECT post.id as pid,
+             post.title as p_title,
+             to_tsvector(post.title) || 
+             to_tsvector(post.content) ||
+             to_tsvector(author.name) ||
+             to_tsvector(coalesce(string_agg(tag.name, &#39; &#39;))) as document
+      FROM post
+      JOIN author ON author.id = post.author_id
+      JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+      JOIN tag ON tag.id = posts_tags.tag_id
+      GROUP BY post.id, author.id) p_search
+WHERE p_search.document @@ to_tsquery(&#39;Endangered &amp; Species&#39;);
+
+ pid |      p_title
+-----+--------------------
+   1 | Endangered species
+(1 row)
+</code></pre></div>
+<p>This will find our document which contains <code>Endangered</code> and <code>Species</code> or lexemes close enough.</p>
+
+<h3>Language support</h3>
+
+<p>Postgres provides built-ins text search for many languages: Danish, Dutch, English, Finnish, French, German, Hungarian, Italian, Norwegian, Portugese, Romanian, Russian, Spanish, Swedish, Turkish.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;english&#39;, &#39;We are running&#39;);
+ to_tsvector
+-------------
+ &#39;run&#39;:3
+(1 row)
+
+SELECT to_tsvector(&#39;french&#39;, &#39;We are running&#39;);
+        to_tsvector
+----------------------------
+ &#39;are&#39;:2 &#39;running&#39;:3 &#39;we&#39;:1
+(1 row)
+</code></pre></div>
+<p>A column name can be used to create the <code>tsvector</code> based on our starting model. Let&#39;s assume that <code>post</code> can be written in different languages and post contains a column <code>language</code>.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ALTER TABLE post ADD language text NOT NULL DEFAULT(&#39;english&#39;);
+</code></pre></div>
+<p>We can now rebuild our document to use this language column.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language::regconfig, post.title) || 
+       to_tsvector(post.language::regconfig, post.content) ||
+       to_tsvector(&#39;simple&#39;, author.name) ||
+       to_tsvector(&#39;simple&#39;, coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;)) as document
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON tag.id = posts_tags.tag_id
+GROUP BY post.id, author.id;
+</code></pre></div>
+<p>Without the explicit cast <code>::regconfig</code> the query will have generated an error:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">ERROR:  function to_tsvector(text, text) does not exist
+</code></pre></div>
+<p><code>regconfig</code> is the object identifier type which represents the text search configuration in Postgres: http://www.postgresql.org/docs/9.3/static/datatype-oid.html</p>
+
+<p>Fow now the lexemes of our document will be built using the right language based on <code>post.language</code>.</p>
+
+<p>We also used <code>simple</code> which is one of the built in search text configs that Postgres provides. <code>simple</code> doesn&#39;t ignore stopwords and doesn&#39;t try to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. With <code>simple</code> every group of characters separated by a space is a lexeme; the <code>simple</code> text search config is pratical for data like a persons name for which we may not want to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;simple&#39;, &#39;We are running&#39;);
+        to_tsvector
+----------------------------
+ &#39;are&#39;:2 &#39;running&#39;:3 &#39;we&#39;:1
+(1 row)
+</code></pre></div>
+<h3>Accented Character</h3>
+
+<p>When you build a search engine supporting many languages you will also hit the accent problem. In many languages accents are very important and can change the meaning of the word. Postgres ships with an extension call <code>unaccent</code> which is useful to unaccentuate content.  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE EXTENSION unaccent;
+SELECT unaccent(&#39;èéêë&#39;);
+
+ unaccent
+----------
+ eeee
+(1 row)
+</code></pre></div>
+<p>Let&#39;s add some accented content to our <code>post</code> table.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">INSERT INTO post (id, title, content, author_id, language) 
+VALUES (4, &#39;il était une fois&#39;, &#39;il était une fois un hôtel ...&#39;, 2,&#39;french&#39;)
+</code></pre></div>
+<p>If we want to ignore accents when we build our document, then we can simply do the following:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language, unaccent(post.title)) || 
+       to_tsvector(post.language, unaccent(post.content)) ||
+       to_tsvector(&#39;simple&#39;, unaccent(author.name)) ||
+       to_tsvector(&#39;simple&#39;, unaccent(coalesce(string_agg(tag.name, &#39; &#39;))))
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON author.id = post.author_id
+GROUP BY p.id
+</code></pre></div>
+<p>That works but it&#39;s a bit cumbersome with more room for mistakes. We can also build a new text search config with support for unaccented characters.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );
+ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING
+FOR hword, hword_part, word WITH unaccent, french_stem;
+</code></pre></div>
+<p>When we are using this new text search config, we can see the lexemes </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;french&#39;, &#39;il était une fois&#39;);
+ to_tsvector
+-------------
+ &#39;fois&#39;:4
+(1 row)
+
+SELECT to_tsvector(&#39;fr&#39;, &#39;il était une fois&#39;);
+    to_tsvector
+--------------------
+ &#39;etait&#39;:2 &#39;fois&#39;:4
+(1 row)
+</code></pre></div>
+<p>This gives us the same result as applying <code>unaccent</code> first and building the <code>tsvector</code> from the result.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;french&#39;, unaccent(&#39;il était une fois&#39;));
+    to_tsvector
+--------------------
+ &#39;etait&#39;:2 &#39;fois&#39;:4
+(1 row)
+</code></pre></div>
+<p>The number of lexemes is different because <code>il était une</code> are stopwords in French. Is it an issue to keep these stop words in our document? I don&#39;t think so as <code>etait</code> is not really a stopword as it&#39;s mispelled.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;fr&#39;, &#39;Hôtel&#39;) @@ to_tsquery(&#39;hotels&#39;) as result;
+ result
+--------
+ t
+(1 row)
+</code></pre></div>
+<p>If we create an unaccented search config for each language that our <code>post</code> can be written in and we keep this value in <code>post.language</code> then we can keep our previous document query. </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language, post.title) || 
+       to_tsvector(post.language, post.content) ||
+       to_tsvector(&#39;simple&#39;, author.name) ||
+       to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;)))
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON author.id = post.author_id
+GROUP BY p.id
+</code></pre></div>
+<p>If you need to create unaccented text search config for each language supported by Postgres then you can use this <a href="https://gist.github.com/rach/9289959">gist</a></p>
+
+<p>Our document will now likely increase in size because it can unclude unaccented stopwords but we query without caring about accented characters. This can be useful e.g. for somebody with an english keyboard searching french content.</p>
+
+<h3>Ranking</h3>
+
+<p>When you build a search engine you want to be able to get search results ordered by relevance. The ranking of documents is based on many factors which are roughly explained in this documentation.</p>
+
+<blockquote>
+<p>Ranking attempts to measure how relevant documents are to a particular query, so that when there are many matches the most relevant ones can be shown first. PostgreSQL provides two predefined ranking functions, which take into account lexical, proximity, and structural information; that is, they consider how often the query terms appear in the document, how close together the terms are in the document, and how important is the part of the document where they occur.</p>
+
+<p>-- <a href="http://www.postgresql.org/docs/9.3/static/textsearch-controls.html#TEXTSEARCH-RANKING">PostgreSQL documentation</a></p>
+</blockquote>
+
+<p>To order our results by revelance PostgreSQL provides a few functions but in our example we will be using only 2 of them : <code>ts_rank()</code> and <code>setweight()</code>.</p>
+
+<p>The function <code>setweight</code> allows us to assign a weight value to a <code>tsvector</code>; the value can be <code>&#39;A&#39;, &#39;B&#39;, &#39;C&#39; or &#39;D&#39;</code></p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT pid, p_title
+FROM (SELECT post.id as pid,
+             post.title as p_title,
+             setweight(to_tsvector(post.language::regconfig, post.title), &#39;A&#39;) || 
+             setweight(to_tsvector(post.language::regconfig, post.content), &#39;B&#39;) ||
+             setweight(to_tsvector(&#39;simple&#39;, author.name), &#39;C&#39;) ||
+             setweight(to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;))), &#39;B&#39;) as document
+      FROM post
+      JOIN author ON author.id = post.author_id
+      JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+      JOIN tag ON tag.id = posts_tags.tag_id
+      GROUP BY post.id, author.id) p_search
+WHERE p_search.document @@ to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)
+ORDER BY ts_rank(p_search.document, to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)) DESC;
+</code></pre></div>
+<p>In the query above, we have assigned different weights to the different fields of a document. <code>post.title</code> is more important than the <code>post.content</code> and as important as <code>tag</code> associated. The least important is the <code>author.name</code>. </p>
+
+<p>This means that if we were to search for the term &#39;Alice&#39; a document that contains that term in its title would be returned before a document that contains the term in its content and document that with an author of that name would be returned last.</p>
+
+<p>Based on the weights assigned to part of our document the <code>ts_rank()</code> returns a floating number which represents the relevancy of our document against the query.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
+               to_tsquery(&#39;example | document&#39;)) as relevancy;
+ relevancy
+-----------
+ 0.0607927
+(1 row)
+
+
+SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
+               to_tsquery(&#39;example &#39;)) as relevancy;
+ relevancy
+-----------
+ 0.0607927
+(1 row)
+
+
+SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
+               to_tsquery(&#39;example | unkown&#39;)) as relevancy;
+ relevancy
+-----------
+ 0.0303964
+(1 row)
+
+
+SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;),
+               to_tsquery(&#39;example &amp; document&#39;)) as relevancy;
+ relevancy
+-----------
+ 0.0985009
+(1 row)
+
+
+SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
+               to_tsquery(&#39;example &amp; unknown&#39;)) as relevancy;
+ relevancy
+-----------
+ 1e-20
+(1 row)
+</code></pre></div>
+<p>However, the concept of relevancy is vague and very application-specific. Different applications might require additional information for ranking, e.g., document modification time. The built-in ranking functions such as <code>ts_rank</code> are only examples. You can write your own ranking functions and/or combine their results with additional factors to fit your specific needs. </p>
+
+<p>To illustrate the paragraph above, if we wanted to promote newer posts against older ones we could divide the ts_rank value by the age of the document +1 (to avoid dividing by zero).</p>
+
+<h3>OPTIMIZATION AND Indexing</h3>
+
+<p>To optimize the search on one table is straight forward. PostgreSQL supports function based indexes so you can simply create a GIN index around the <code>tsvector()</code> function.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE INDEX idx_fts_post ON post 
+USING gin(setweight(to_tsvector(language, title),&#39;A&#39;) || 
+           setweight(to_tsvector(language, content), &#39;B&#39;));
+</code></pre></div>
+<p>GIN or GiST indexes? These two indexes could be subject of a blog post themselves. GiST can produce false matches which then requires a extra table row lookup to confirm the match. On the other hand, GIN is faster to query but bigger and slower to build.</p>
+
+<blockquote>
+<p>As a rule of thumb, GIN indexes are best for static data because lookups are faster. For dynamic data, GiST indexes are faster to update. Specifically, GiST indexes are very good for dynamic data and fast if the number of unique words (lexemes) is under 100,000, while GIN indexes will handle 100,000+ lexemes better but are slower to update.</p>
+
+<p>-- <a href="http://www.postgresql.org/docs/9.1/static/textsearch-indexes.html">Postgres doc : Chap 12 Full Text Search</a></p>
+</blockquote>
+
+<p>For our example, we will be using GIN but the choice can be argued and you need to take your own decision based on your data.</p>
+
+<p>We have a problem in our schema example; the document is spread accross multiple tables with different weights. For a better performance it&#39;s necessary to denormalize the data via triggers or materialized view. </p>
+
+<p>You don&#39;t always need to denormalise and in some cases you can add a function based index as we did above. Alternatively you can easily denormalise data from the same table via the postgres trigger function <code>tsvector_update_trigger(...)</code> or <code>tsvector_update_trigger_column(...)</code>. See the <a href="http://www.postgresql.org/docs/9.3/static/textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS">Postgres doc</a> for more detailed information.</p>
+
+<p>For our application there being some some delay before results are returned via the search can be acceptable. This is a good use case for using a Materialized View so we can add an extra index on it.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE MATERIALIZED VIEW search_index AS 
+SELECT post.id,
+       post.title,
+       setweight(to_tsvector(post.language::regconfig, post.title), &#39;A&#39;) || 
+       setweight(to_tsvector(post.language::regconfig, post.content), &#39;B&#39;) ||
+       setweight(to_tsvector(&#39;simple&#39;, author.name), &#39;C&#39;) ||
+       setweight(to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;))), &#39;A&#39;) as document
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON tag.id = posts_tags.tag_id
+GROUP BY post.id, author.id
+</code></pre></div>
+<p>Then reindexing the search engine will be as simple as periodically running   <code>REFRESH MATERIALIZED VIEW search_index;</code>.</p>
+
+<p>We can now add an index on the materialized view.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text"> CREATE INDEX idx_fts_search ON search_index USING gin(document);
+</code></pre></div>
+<p>And querying will become much simpler too.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT id as post_id, title
+FROM search_index
+WHERE document @@ to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)
+ORDER BY ts_rank(p_search.document, to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)) DESC;
+</code></pre></div>
+<p>If you cannot afford delay then you may have to investigate the alternative method using triggers.</p>
+
+<p>There is not one way to build your document store; it will depend on what comprises your document: single table, multiple table, multiple languages, amount of data ...</p>
+
+<p><a href="http://thoughtbot.com/">Thoughtbot.com</a> published a good article on <a href="http://robots.thoughtbot.com/implementing-multi-table-full-text-search-with-postgres">&quot;Implementing Multi-Table Full Text Search with Postgres in Rails&quot;</a> which I advise reading.</p>
+
+<h3>Mispelling</h3>
+
+<p>PostgreSQL comes with a very useful extenstion called <code>pg_trgm</code>. See <a href="http://www.postgresql.org/docs/9.3/static/pgtrgm.html">pg_trgm doc</a>.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE EXTENSION pg_trgm;
+</code></pre></div>
+<p>This provides support for trigram which is a <a href="http://en.wikipedia.org/wiki/N-gram">N-gram with</a> <code>N == 3</code>. N-grams are useful because they allow finding strings with similar characters and, in essence, that&#39;s what a misspelling is - a word that is similar but not quite right.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT similarity(&#39;Something&#39;, &#39;something&#39;);
+ similarity
+------------
+     1
+(1 row)
+
+SELECT similarity(&#39;Something&#39;, &#39;samething&#39;);
+ similarity
+------------
+  0.538462
+(1 row)
+
+SELECT similarity(&#39;Something&#39;, &#39;unrelated&#39;);
+ similarity
+------------
+     0
+(1 row)
+
+SELECT similarity(&#39;Something&#39;, &#39;everything&#39;);
+ similarity                                          
+------------
+   0.235294
+(1 row)
+
+SELECT similarity(&#39;Something&#39;, &#39;omething&#39;);
+ similarity
+------------
+   0.583333
+(1 row)
+</code></pre></div>
+<p>With the examples above you can see that similarity returns a float to represent the similarity between two strings. To detect mispelling is then a matter of collecting the lexemes used by our documents and comparing the similarity with our search input. I found that 0.5 is good number to test similarity of mispelling. First we need to create this list of unique lexemes used by our documents.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE MATERIALIZED VIEW unique_lexeme AS
+SELECT word FROM ts_stat(
+&#39;SELECT to_tsvector(&#39;simple&#39;, post.title) || 
+    to_tsvector(&#39;simple&#39;, post.content) ||
+    to_tsvector(&#39;simple&#39;, author.name) ||
+    to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;)))
+FROM post
+JOIN author ON author.id = post.author_id
+JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
+JOIN tag ON tag.id = posts_tags.tag_id
+GROUP BY post.id, author.id&#39;);
+</code></pre></div>
+<p>The query above builds a view with one column called <code>word</code> from all the unique lexemes of our documents. We used <code>simple</code> because our content can be in multiple languages. Once we create this materialized view we need to add an index to make a similarity query faster.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE INDEX words_idx ON search_words USING gin(word gin_trgm_ops);
+</code></pre></div>
+<p>Luckily unique lexemes used in a search engine is not something that will change rapidly so we possibly won&#39;t have to refresh the materialized view too often via:  </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">REFRESH MATERIALIZED VIEW unique_lexeme;
+</code></pre></div>
+<p>Once we have built this table finding the closest match is very simple.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT word 
+WHERE similarity(word, &#39;samething&#39;) &gt; 0.5 
+ORDER BY word &lt;-&gt; &#39;samething&#39;
+LIMIT 1; 
+</code></pre></div>
+<p>This query returns a lexeme which is similar enough (<code>&gt;0.5</code>) to the search input <code>samething</code> ordered by the closest first. The operator <code>&lt;-&gt;</code> returns the &quot;distance&quot; between the arguments, that is one minus the <code>similarity()</code> value. </p>
+
+<p>When you decide to handle mispelling in your search you may want to not look for misspellings on every query. Instead you could query for misspellings only when the search returns no results and use the results of that query to provide some suggestions to your user. It is also possible that your data may contain misspellings if it comes from some source of informal communication such as a social network in which case you may obtain good results by appending the similar lexeme to your <code>tsquery</code>.</p>
+
+<p><a href="http://bartlettpublishing.com/site/bartpub/blog/3/entry/350">&quot;Super Fuzzy Searching on PostgreSQL&quot;</a> is a good reference article about the use of trigrams for using misspellings and search with Postgres. </p>
+
+<p>In my use case the unique lexemes table has never been bigger than 2000 rows but from my understanding if you have more 1M unique lexemes used accross your document then you may be meet performance issues with this technique.</p>
+
+<h3>About MySQL and RDS</h3>
+
+<h4>Does it works on Postgres RDS?</h4>
+
+<p>All the examples illustrated work on RDS. From what I&#39;m aware the only restrictions on search features imposed by RDS are those that require access to the file system such as custom dictionaries, ispell, synonyms and thesaurus. See <a href="https://forums.aws.amazon.com/message.jspa?messageID=527000#527000">the related issue on the aws forum</a>.</p>
+
+<h4>I&#39;m using MYSQL should I use the builtin full-text search?</h4>
+
+<p>I wouldn&#39;t. Without starting a flame war, MySQL full-text search features are very limited. By default there is no support for stemming nor any language support. I came accross a stemming function which can be installed but MYSQL doesn&#39;t support function based indexes.</p>
+
+<p>Then what can you do? Based on what we have discussed above if Postgres fulfills your use case then think about moving to Postgres. This can easily be done via tools like <a href="https://github.com/philipsoutham/py-mysql2pgsql/">py-mysql2pgsql</a>. Or you can investigate more advanced solutions like SOLR and Elasticsearch. </p>
+
+<h3>Conclusion</h3>
+
+<p>We have seen how to build a decent multi-language search engine based on a non-trival document. This article is only an overview but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to blog@lostpropertyhq.com</p>
+
+<p>The full-text search feature included in Posgres is awesome and quite fast (enough). It will allow your application to grow without depending on another tool. Is Postgres Search the silver bullet? Probably not if your core business needs revolve around search. </p>
+
+<p>Some features are missing but in lot of use cases you won&#39;t need them. It goes without saying that it&#39;s critical that you analyze and understand your needs to know which road to take.</p>
+
+<p>Personally I hope to see the full-text search continuing to improve in Postgres and maybe a few of these features being included:</p>
+
+<ul>
+<li>Additional built in language support. eg: Chinese, Japanese...</li>
+<li>Foreign data wrapper around Lucene. Lucene is still the most advanced tool for full-text search and it will have a lot of benefits to see integration with Postgres.</li>
+<li>More boost or scoring feature for the ranking of results would be first-rate. Elasticsearch and SOLR offer advanced solutions already.</li>
+<li>A way to do fuzzy <code>tsquery</code> without having to use trigram would be nice. Elasticsearch offer a simple way to do fuzzy search queries.</li>
+<li>Being able to create and edit dynamically features such as dictionary content, synonyms, thesaurus via SQL this removing the need to add files to the filesystem</li>
+</ul>
+
+<p>Postgres is not as advanced as ElasticSearch and SOLR but these two are dedicated full-text search tools whereas full-text search is only a feature of PostgreSQL and a pretty good one.</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/rachbelaid">
+        <img class="avatar" src="/assets/images/avatar.png">
+        <div>
+            <span class="dark">Rachid Belaid</span>
+            <span>Blogging about stuffs</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        
+  
+  <a class="twitter" href="https://twitter.com/intent/tweet?text=http://bit.ly/1L3aV5n - Postgres full-text search is Good Enough! by @rachbelaid"><span class="icon-twitter"></span></a>
+  <a class="facebook" href="#" onclick="
+      window.open(
+        'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
+        'facebook-share-dialog',
+        'width=626,height=436');
+      return false;"><span class="icon-facebook"></span>
+  </a>
+
+
+    </section>
+</footer>
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/2015/postgres-full-text-search-is-good-enough/">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+            </li>
+        
+            <li>
+                <a href="/2015/git-subtree-to-create-a-branch-from-subfolder/">Using Git Subtree to create branches from a directory<aside class="dates">Jul 11</aside></a>
+            </li>
+        
+            <li>
+                <a href="/2015/virtualenvwrapper-plugins-for-gems-and-npms/">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+            </li>
+        
+            <li>
+                <a href="/2015/keep-your-gems-and-npms-inside-your-virtualenv/">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+            </li>
+        
+            <li>
+                <a href="/2015/handling-go-workspace-with-direnv/">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-XXXXXXXX-X', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+
