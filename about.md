@@ -4,6 +4,8 @@ permalink: about/
 profile: true
 ---
 
-This is a static page. It could be an 'about page' if you'd like.
+Something about me coming soon.
+
+Available for hire!
 
 {% include footer.html %}

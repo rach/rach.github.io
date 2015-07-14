@@ -35,10 +35,99 @@
         <h2 class="headline">June 28, 2015</h2>
     </header>
     <section id="post-body">
-        <p>You&#39;ll find this post in your <code>_posts</code> directory - edit this post and re-build (or run with the <code>-w</code> switch) to see your changes!
-To add new posts, simply add a file in the <code>_posts</code> directory that follows the convention: YYYY-MM-DD-name-of-post.ext.</p>
+        <p>When I started to do some <a href="go-lang">Go</a> I quickly hit my first hurdle: <a href="go-workspace">The Go Workspace</a>. The go tool is designed to work with code maintained in public repositories using the (FQDB)<a href="https://en.wikipedia.org/wiki/Fully_qualified_domain_name">FQDN</a> and path as namespace and package name. Eg: <code>github.com/rach/project-x</code> where <code>github.com/rach</code> is kind of namespace enfore by a directory structure and <code>project-x</code> is the package name also enforce by directory structure.</p>
 
-<p>Jekyll also offers powerful support for code snippets:</p>
+<p>Coming from Python, I was suprised that there were not a solution as simple as <a href="virtualenv">virtualenv</a>. Go does offer a solution but it requires a bit more code gymnastic. </p>
+
+<p>In this post, I&#39;m going to describe how I made my life easier to work with Go with a bit of shell script and using <a href="direnv">direnv</a> to automate workspace switching. I didn&#39;t know much about go when I wrote this post so feel free to shed some light on any of my mistakes.   </p>
+
+<h2>Workspaces</h2>
+
+<p>Go project must be kept inside a workspace. A workspace is a directory hierarchy with few directories:</p>
+
+<ul>
+<li><code>src</code> contains Go source files organized into packages (one package per directory),</li>
+<li><code>pkg</code> contains package objects, and</li>
+<li><code>bin</code> contains executable commands. </li>
+</ul>
+
+<p>The go tool builds source packages and installs the resulting binaries to the pkg and bin directories.</p>
+
+<p>The <code>src</code> subdirectory typically contains multiple version control repositories (such as for Git or Mercurial) that track the development of one or more source packages.</p>
+
+<p>To give you an idea of how a workspace looks in practice, here&#39;s an example:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">bin/
+    hello                          # command executable
+    outyet                         # command executable
+pkg/
+    linux_amd64/
+        github.com/golang/example/
+            stringutil.a           # package object
+src/
+    github.com/golang/example/
+        .git/                      # Git repository metadata
+        hello/
+            hello.go               # command source
+        outyet/
+            main.go                # command source
+            main_test.go           # test source
+        stringutil/
+            reverse.go             # package source
+            reverse_test.go        # test source
+</code></pre></div>
+<p>The problem that I hit was: </p>
+
+<ul>
+<li>how do you work on multiple different projects?</li>
+<li>how should specify which workspace that I working on?</li>
+</ul>
+
+<p>It&#39;s when the <code>GOPATH</code> enter to define the workspace location.   </p>
+
+<h2>The GOPATH environment variable</h2>
+
+<p>The GOPATH environment variable specifies the location of your workspace. To get started, create a workspace directory and set GOPATH accordingly. Your workspace can be located wherever you like.</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkdir <span class="nv">$HOME</span>/go
+<span class="nv">$ </span><span class="nb">export </span><span class="nv">GOPATH</span><span class="o">=</span><span class="nv">$HOME</span>/go</code></pre></div>
+
+<p>To be able to call the binary build inside your workspace, add bin subdirectory to your PATH:</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$GOPATH</span>/bin</code></pre></div>
+
+<p>For you project can choose any arbitrary path name, as long as it is unique to the standard library and greater Go ecosystem. It&#39;s the convention to use a FQDN and path as your folder structure which will behave as namespaces.</p>
+
+<p>We&#39;ll use <code>github.com/rach/project-x</code> as our base path. Create a directory inside your workspace in which to keep source code:</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkdir -p <span class="nv">$GOPATH</span>/src/github.com/rach/project-x</code></pre></div>
+
+<h2>Update the GOPATH automaticaly with direnv</h2>
+
+<p>Direnv is an environment switcher for the shell. It load or unload environment variables depending on the current directory. This allows to have project-specific environment variables. direnv works with bash, zsh, tcsh and fish shell. Direnv checks for the existence of an &quot;.envrc&quot; file in the current and parent directories. If the file exists, the variables declared in <code>.envrc</code> are made available in the current shell. When you leave the directy or sub-directory where .envrc is present the variable are unloaded. It also works well with updating existing environment variable.</p>
+
+<p>To install direnv on OSX using zsh, you can follow this steps: </p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>brew update
+<span class="nv">$ </span>brew install direnv
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;eval &quot;$(direnv hook zsh)&quot;&#39;</span> &gt;&gt; ~/.zshrc</code></pre></div>
+
+<p>Using direnv, it becomes easy to have multiple workspaces and switch between them. Simply create a <code>.envrc</code> file at the location of your workspace and export the appropriate variable:</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkdir <span class="nv">$HOME</span>/new-workspace
+<span class="nv">$ </span><span class="nb">cd</span> <span class="nv">$HOME</span>/new-workspace
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;export GOPATH=$(PWD):$GOPATH&#39;</span> &gt;&gt; .envrc
+<span class="nv">$ </span><span class="nb">echo</span> <span class="s1">&#39;export PATH=$(PWD)/bin:$PATH&#39;</span> &gt;&gt; .envrc 
+<span class="nv">$ </span>direnv allow</code></pre></div>
+
+<p>With the code above we now have a workspace which enable itself when you enter it. 
+Having multiple workspace help to experiment with libs/package that you want to test in the same way you can install a python lib just for a one-time use.</p>
+
+<p>Assuming we will be writing a lot of go projects, will not be nice of a having an helper to 
+create this automated workspaces following the suggested structure.</p>
+
+<h3>Automate workspace creation</h3>
+
+<p>Now that we know how a workspace should look like and how to make switching them easier. Let&#39;s automate the creation new project with workspaces to avoid mistakes, for that I wrote a small <code>zsh</code> function to do it for me. </p>
 
 <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="k">function</span> mkgoproject <span class="o">{</span>
   TRAPINT<span class="o">()</span> <span class="o">{</span>
@@ -73,6 +162,20 @@ To add new posts, simply add a file in the <code>_posts</code> directory that fo
   direnv allow <span class="nv">$project</span>
   <span class="nb">echo</span> <span class="s2">&quot;cd $project/src/$namespace/$project #to start coding&quot;</span>
 <span class="o">}</span></code></pre></div>
+
+<p>If you are using zsh then you should be able to copy/paste this function into 
+your zshrc and after reloading it then you be able to call <code>mkgoproject</code>. 
+If you call the function with an argument then it will consider it being 
+the project name and it will ask you for a namespace (eg: github.com/rach), otherwise it will ask you for both: project name (package) and namespace. 
+The create a new worspace with an envrc and helloword ready to build within 
+the correct directory structure.</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$ </span>mkgoproject <span class="nb">test</span>
+Creating new Go project:
+what is your project namespace: github/rach
+<span class="nb">cd test</span>/src/github/rach/test <span class="c">#to start coding</span></code></pre></div>
+
+<p>I hope this post will help you into automate the switching between your go project and the creation of them.  </p>
 
     </section>
 </article>

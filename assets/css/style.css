@@ -43,8 +43,12 @@ html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abb
 .icon-facebook-rect:before { content: '\e803'; }
 
 /* Spacing */
-.post h1, h3, h4, h5, p, .post-body ul, #post-list li, pre {
+.post h1, h3, h4, h5, p, #post-body ul, #post-list li, pre {
 margin-bottom: 20px;
+}
+
+#post-body li{
+margin-bottom: 10px;
 }
 
 /* Base */
@@ -70,8 +74,8 @@ h2 {
 }
 
 .profile #wrapper {
-	padding: 100px 40px 0px;
-	max-width: 600px;
+	padding: 100px 20px 0px;
+	max-width: 640px;
 	margin: 0 auto;
 }
 
@@ -139,9 +143,9 @@ nav.main-nav a.cta {
 }
 
 #wrapper {
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
-  padding: 60px 40px 100px 40px;
+  padding: 60px 20px 100px 40px;
 }
 
 #wrapper.home {
