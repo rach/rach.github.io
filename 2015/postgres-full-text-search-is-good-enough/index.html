@@ -59,49 +59,53 @@
 </ul>
 
 <p>In this post we are going to progressively illustrate some of the full-text search features in Postgres based on the following tables and data:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE TABLE author(
-   id SERIAL PRIMARY KEY,
-   name TEXT NOT NULL
-);
 
-CREATE TABLE post(
-   id SERIAL PRIMARY KEY,
-   title TEXT NOT NULL,
-   content TEXT NOT NULL,
-   author_id INT NOT NULL references author(id) 
-);
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">author</span><span class="p">(</span>
+   <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+   <span class="n">name</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span>
+<span class="p">);</span>
 
-CREATE TABLE tag(
-   id SERIAL PRIMARY KEY,
-   name TEXT NOT NULL 
-);
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">post</span><span class="p">(</span>
+   <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+   <span class="n">title</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+   <span class="n">content</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span><span class="p">,</span>
+   <span class="n">author_id</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">references</span> <span class="n">author</span><span class="p">(</span><span class="n">id</span><span class="p">)</span> 
+<span class="p">);</span>
 
-CREATE TABLE posts_tags(
-   post_id INT NOT NULL references post(id),
-   tag_id INT NOT NULL references tag(id)
- );
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tag</span><span class="p">(</span>
+   <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+   <span class="n">name</span> <span class="nb">TEXT</span> <span class="k">NOT</span> <span class="k">NULL</span> 
+<span class="p">);</span>
 
-INSERT INTO author (id, name) 
-VALUES (1, &#39;Pete Graham&#39;), 
-       (2, &#39;Rachid Belaid&#39;), 
-       (3, &#39;Robert Berry&#39;);
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">posts_tags</span><span class="p">(</span>
+   <span class="n">post_id</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">references</span> <span class="n">post</span><span class="p">(</span><span class="n">id</span><span class="p">),</span>
+   <span class="n">tag_id</span> <span class="nb">INT</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">references</span> <span class="n">tag</span><span class="p">(</span><span class="n">id</span><span class="p">)</span>
+ <span class="p">);</span>
 
-INSERT INTO tag (id, name) 
-VALUES (1, &#39;scifi&#39;), 
-       (2, &#39;politics&#39;), 
-       (3, &#39;science&#39;);
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">author</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> 
+<span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Pete Graham&#39;</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Rachid Belaid&#39;</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;Robert Berry&#39;</span><span class="p">);</span>
 
-INSERT INTO post (id, title, content, author_id) 
-VALUES (1, &#39;Endangered species&#39;, &#39;Pandas are an endangered species&#39;, 1 ), 
-       (2, &#39;Freedom of Speech&#39;, &#39;Freedom of speech is a necessary right missing in many countries&#39;, 2), 
-       (3, &#39;Star Wars vs Star Trek&#39;, &#39;Few words from a big fan&#39;, 3);
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">tag</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> 
+<span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;scifi&#39;</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;politics&#39;</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;science&#39;</span><span class="p">);</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">post</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">author_id</span><span class="p">)</span> 
+<span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;Endangered species&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;Pandas are an endangered species&#39;</span><span class="p">,</span> <span class="mi">1</span> <span class="p">),</span> 
+       <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;Freedom of Speech&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;Freedom of speech is a necessary right&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;Star Wars vs Star Trek&#39;</span><span class="p">,</span> 
+        <span class="s1">&#39;Few words from a big fan&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
 
 
-INSERT INTO posts_tags (post_id, tag_id) 
-VALUES (1, 3), 
-       (2, 2), 
-       (3, 1);
-</code></pre></div>
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">posts_tags</span> <span class="p">(</span><span class="n">post_id</span><span class="p">,</span> <span class="n">tag_id</span><span class="p">)</span> 
+<span class="k">VALUES</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
+       <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span></code></pre></div>
+
 <p>It&#39;s a traditional blog-like application with <code>post</code> objects, which have a <code>title</code> and <code>content</code>. A <code>post</code> is associated to an <code>author</code> via a foreign key. A <code>post</code> itself can have multiple tags  </p>
 
 <h3>What is Full-Text Search.</h3>
@@ -137,54 +141,58 @@ Based on our example schema, the document is composed of:</p>
 </ul>
 
 <p>To create our document based on this criteria imagine this SQL query:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text"> SELECT post.title || &#39; &#39; || 
-        post.content || &#39; &#39; ||
-        author.name || &#39; &#39; ||
-        coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;) as document
- FROM post
- JOIN author ON author.id = post.author_id
- JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
- JOIN tag ON tag.id = posts_tags.tag_id
- GROUP BY post.id, author.id;
 
-               document
- --------------------------------------------------
- Endangered species Pandas are an endangered species Pete Graham politics
- Freedom of Speech Freedom of speech is a necessary right missing in many countries Rachid Belaid politics
- Star Wars vs Star Trek Few words from a big fan Robert Berry politics
-(3 rows)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">post</span><span class="p">.</span><span class="n">title</span> <span class="o">||</span> <span class="s1">&#39; &#39;</span> <span class="o">||</span> 
+       <span class="n">post</span><span class="p">.</span><span class="n">content</span> <span class="o">||</span> <span class="s1">&#39; &#39;</span> <span class="o">||</span>
+       <span class="n">author</span><span class="p">.</span><span class="n">name</span> <span class="o">||</span> <span class="s1">&#39; &#39;</span> <span class="o">||</span>
+       <span class="n">coalesce</span><span class="p">((</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)),</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">document</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span><span class="p">;</span>
+
+              <span class="n">document</span>
+<span class="c1">--------------------------------------------------</span>
+<span class="n">Endangered</span> <span class="n">species</span> <span class="n">Pandas</span> <span class="k">are</span> <span class="n">an</span> <span class="n">endangered</span> <span class="n">species</span> <span class="n">Pete</span> <span class="n">Graham</span> <span class="n">politics</span>
+<span class="n">Freedom</span> <span class="k">of</span> <span class="n">Speech</span> <span class="n">Freedom</span> <span class="k">of</span> <span class="n">speech</span> <span class="k">is</span> <span class="n">a</span> <span class="n">necessary</span> <span class="k">right</span> <span class="n">Rachid</span> <span class="n">Belaid</span> <span class="n">politics</span>
+<span class="n">Star</span> <span class="n">Wars</span> <span class="n">vs</span> <span class="n">Star</span> <span class="n">Trek</span> <span class="n">Few</span> <span class="n">words</span> <span class="k">from</span> <span class="n">a</span> <span class="n">big</span> <span class="n">fan</span> <span class="n">Robert</span> <span class="n">Berry</span> <span class="n">politics</span>
+<span class="mi">3</span> <span class="k">rows</span><span class="p">)</span></code></pre></div>
+
 <p>As we are grouping by <code>post</code> and <code>author</code>, we are using <code>string_agg()</code> as the aggregate function because multiple <code>tag</code> can be associated to a <code>post</code>. Even if <code>author</code> is a foreign key and a <code>post</code> cannot have more than one <code>author</code>, it is required to add an aggregate function for <code>author</code> or to add <code>author</code> to the <code>GROUP BY</code>.</p>
 
 <p>We also used <code>coalesce()</code>. When a value can be <code>NULL</code> then it&#39;s good practice to use the <code>coalesce()</code> function, otherwise the concatenation will result in a <code>NULL</code> value too.</p>
 
 <p>At this stage our document is simply a long <code>string</code> and this doesn&#39;t help us; we need to transform it into the right format via the function <code>to_tsvector()</code>.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.title) || 
-       to_tsvector(post.content) ||
-       to_tsvector(author.name) ||
-       to_tsvector(coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;)) as document
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON tag.id = posts_tags.tag_id
-GROUP BY post.id, author.id;
 
-               document
- --------------------------------------------------
- &#39;endang&#39;:1,6 &#39;graham&#39;:9 &#39;panda&#39;:3 &#39;pete&#39;:8 &#39;polit&#39;:10 &#39;speci&#39;:2,7
- &#39;belaid&#39;:16 &#39;countri&#39;:14 &#39;freedom&#39;:1,4 &#39;mani&#39;:13 &#39;miss&#39;:11 &#39;necessari&#39;:9 &#39;polit&#39;:17 &#39;rachid&#39;:15 &#39;right&#39;:10 &#39;speech&#39;:3,6
-&#39;berri&#39;:13 &#39;big&#39;:10 &#39;fan&#39;:11 &#39;polit&#39;:14 &#39;robert&#39;:12 &#39;star&#39;:1,4 &#39;trek&#39;:5 &#39;vs&#39;:3 &#39;war&#39;:2 &#39;word&#39;:7
-(3 rows)         
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">coalesce</span><span class="p">((</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)),</span> <span class="s1">&#39;&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">document</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span><span class="p">;</span>
+           
+               <span class="n">document</span>
+ <span class="c1">--------------------------------------------------</span>
+ <span class="s1">&#39;endang&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span> <span class="s1">&#39;graham&#39;</span><span class="p">:</span><span class="mi">9</span> <span class="s1">&#39;panda&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;pete&#39;</span><span class="p">:</span><span class="mi">8</span> <span class="s1">&#39;polit&#39;</span><span class="p">:</span><span class="mi">10</span> <span class="s1">&#39;speci&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span><span class="mi">7</span>
+ <span class="s1">&#39;belaid&#39;</span><span class="p">:</span><span class="mi">12</span> <span class="s1">&#39;freedom&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span>  <span class="s1">&#39;necessari&#39;</span><span class="p">:</span><span class="mi">9</span> <span class="s1">&#39;polit&#39;</span><span class="p">:</span><span class="mi">13</span> <span class="s1">&#39;rachid&#39;</span><span class="p">:</span><span class="mi">11</span> <span class="s1">&#39;right&#39;</span><span class="p">:</span><span class="mi">10</span> <span class="s1">&#39;speech&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span>
+ <span class="s1">&#39;berri&#39;</span><span class="p">:</span><span class="mi">13</span> <span class="s1">&#39;big&#39;</span><span class="p">:</span><span class="mi">10</span> <span class="s1">&#39;fan&#39;</span><span class="p">:</span><span class="mi">11</span> <span class="s1">&#39;polit&#39;</span><span class="p">:</span><span class="mi">14</span> <span class="s1">&#39;robert&#39;</span><span class="p">:</span><span class="mi">12</span> <span class="s1">&#39;star&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span> <span class="s1">&#39;trek&#39;</span><span class="p">:</span><span class="mi">5</span> <span class="s1">&#39;vs&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;war&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;word&#39;</span><span class="p">:</span><span class="mi">7</span>
+<span class="p">(</span><span class="mi">3</span> <span class="k">rows</span><span class="p">)</span></code></pre></div>
+
 <p>This query will return our document as <code>tsvector</code> which is a type suited to full-text search. Let&#39;s try to convert a simple string into a tsvector.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;Try not to become a man of success, but rather try to become a man of value&#39;);
-</code></pre></div>
-<p>The query will return the following result:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">                             to_tsvector
-----------------------------------------------------------------------
-&#39;becom&#39;:4,13 &#39;man&#39;:6,15 &#39;rather&#39;:10 &#39;success&#39;:8 &#39;tri&#39;:1,11 &#39;valu&#39;:17
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;Try not to become a man of success, but rather try to become a man of value&#39;</span><span class="p">);</span>
+
+<span class="n">query</span> <span class="n">will</span> <span class="k">return</span> <span class="n">the</span> <span class="n">following</span> <span class="k">result</span><span class="p">:</span>
+
+                             <span class="n">to_tsvector</span>
+<span class="c1">----------------------------------------------------------------------</span>
+<span class="s1">&#39;becom&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">13</span> <span class="s1">&#39;man&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="mi">15</span> <span class="s1">&#39;rather&#39;</span><span class="p">:</span><span class="mi">10</span> <span class="s1">&#39;success&#39;</span><span class="p">:</span><span class="mi">8</span> <span class="s1">&#39;tri&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span> <span class="s1">&#39;valu&#39;</span><span class="p">:</span><span class="mi">17</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>Something weird just happened. First there are less words than in the original sentence, some of the words are different (<code>try</code> became <code>tri</code>) and they are all followed by numbers. Why?</p>
 
 <p>A <code>tsvector</code> value is a sorted list of distinct lexemes which are words that have been normalized to make different variants of the same word look alike.
@@ -198,205 +206,225 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <h3>Querying</h3>
 
 <p>We have seen how to build a document but the goal here is to find the document. For running a query against a <code>tsvector</code> we can use the <code>@@</code> operator which is documented <a href="http://www.postgresql.org/docs/9.3/static/functions-textsearch.html#FUNCTIONS-TEXTSEARCH">here</a>. Let&#39;s see some examples on how to query our document.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; select to_tsvector(&#39;If you can dream it, you can do it&#39;) @@ &#39;dream&#39;;
- ?column?
-----------
- t
-(1 row)
 
-&gt; select to_tsvector(&#39;It&#39;&#39;s kind of fun to do the impossible&#39;) @@ &#39;impossible&#39;;
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">select</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If you can dream it, you can do it&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="s1">&#39;dream&#39;</span><span class="p">;</span>
+ <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+<span class="c1">----------</span>
+ <span class="n">t</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
- ?column?
-----------
- f
-(1 row)
-</code></pre></div>
+<span class="o">&gt;</span> <span class="k">select</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;It&#39;&#39;s kind of fun to do the impossible&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="s1">&#39;impossible&#39;</span><span class="p">;</span>
+
+ <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+<span class="c1">----------</span>
+ <span class="n">f</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>The second query returns false because we need to build a <code>tsquery</code> which creates the same lexemes and, using the operator <code>@@</code>, casts the string into a tsquery. The following shows the difference between casting and using the function <code>to_tsquery()</code></p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT &#39;impossible&#39;::tsquery, to_tsquery(&#39;impossible&#39;);
-   tsquery    | to_tsquery
---------------+------------
- &#39;impossible&#39; | &#39;imposs&#39;
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="s1">&#39;impossible&#39;</span><span class="p">::</span><span class="n">tsquery</span><span class="p">,</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;impossible&#39;</span><span class="p">);</span>
+   <span class="n">tsquery</span>    <span class="o">|</span> <span class="n">to_tsquery</span>
+<span class="c1">--------------+------------</span>
+ <span class="s1">&#39;impossible&#39;</span> <span class="o">|</span> <span class="s1">&#39;imposs&#39;</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>But in the case of &#39;dream&#39; the stem is equal to the word.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT &#39;dream&#39;::tsquery, to_tsquery(&#39;dream&#39;);
-   tsquery    | to_tsquery
---------------+------------
- &#39;dream&#39;      | &#39;dream&#39;
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="s1">&#39;dream&#39;</span><span class="p">::</span><span class="n">tsquery</span><span class="p">,</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;dream&#39;</span><span class="p">);</span>
+   <span class="n">tsquery</span>    <span class="o">|</span> <span class="n">to_tsquery</span>
+<span class="c1">--------------+------------</span>
+ <span class="s1">&#39;dream&#39;</span>      <span class="o">|</span> <span class="s1">&#39;dream&#39;</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>From now on we will use <code>to_tsquery</code> for querying documents.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;It&#39;&#39;s kind of fun to do the impossible&#39;) @@ to_tsquery(&#39;impossible&#39;);
 
- ?column?
-----------
- t
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;It&#39;&#39;s kind of fun to do the impossible&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;impossible&#39;</span><span class="p">);</span>
+
+ <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+<span class="c1">----------</span>
+ <span class="n">t</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>A tsquery value stores lexemes that are to be searched for, and combines them honoring the Boolean operators &amp; (AND), | (OR), and ! (NOT). Parentheses can be used to enforce grouping of the operators</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; SELECT to_tsvector(&#39;If the facts don&#39;t fit the theory, change the facts&#39;) @@ to_tsquery(&#39;! fact&#39;);
 
- ?column?
-----------
- f
-(1 row)
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If the facts don&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="o">!</span> <span class="n">fact</span><span class="s1">&#39;);</span>
+<span class="s1">    </span>
+<span class="s1">     ?column?</span>
+<span class="s1">    ----------</span>
+<span class="s1">     f</span>
+<span class="s1">    (1 row)</span>
 
-&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts&#39;) @@ to_tsquery(&#39;theory &amp; !fact&#39;);
+<span class="s1">    &gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">theory</span> <span class="o">&amp;</span> <span class="o">!</span><span class="n">fact</span><span class="s1">&#39;);</span>
+<span class="s1">    </span>
+<span class="s1">     ?column?</span>
+<span class="s1">    ----------</span>
+<span class="s1">     f</span>
+<span class="s1">    (1 row)</span>
+<span class="s1">    </span>
+<span class="s1">    &gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="p">.</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">fiction</span> <span class="o">|</span> <span class="n">theory</span><span class="err">&#39;</span><span class="p">);</span>
+    
+     <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+    <span class="c1">----------</span>
+     <span class="n">t</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
- ?column?
-----------
- f
-(1 row)
-
-&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;) @@ to_tsquery(&#39;fiction | theory&#39;);
-
- ?column?
-----------
- t
-(1 row)
-</code></pre></div>
 <p>We can also use startwith query style when using <code>:*</code>.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">&gt; SELECT to_tsvector(&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;) @@ to_tsquery(&#39;theo:*&#39;);
 
- ?column?
-----------
- t
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;theo:*&#39;</span><span class="p">);</span>
+    
+     <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+    <span class="c1">----------</span>
+     <span class="n">t</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>Now that we know how to make a full-text search query, we can come back to our initial table schema and try to query our documents.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT pid, p_title
-FROM (SELECT post.id as pid,
-             post.title as p_title,
-             to_tsvector(post.title) || 
-             to_tsvector(post.content) ||
-             to_tsvector(author.name) ||
-             to_tsvector(coalesce(string_agg(tag.name, &#39; &#39;))) as document
-      FROM post
-      JOIN author ON author.id = post.author_id
-      JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-      JOIN tag ON tag.id = posts_tags.tag_id
-      GROUP BY post.id, author.id) p_search
-WHERE p_search.document @@ to_tsquery(&#39;Endangered &amp; Species&#39;);
 
- pid |      p_title
------+--------------------
-   1 | Endangered species
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">pid</span><span class="p">,</span> <span class="n">p_title</span>
+<span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span> <span class="k">as</span> <span class="n">pid</span><span class="p">,</span>
+             <span class="n">post</span><span class="p">.</span><span class="n">title</span> <span class="k">as</span> <span class="n">p_title</span><span class="p">,</span>
+             <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="o">||</span> 
+             <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">)</span> <span class="o">||</span>
+             <span class="n">to_tsvector</span><span class="p">(</span><span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="o">||</span>
+             <span class="n">to_tsvector</span><span class="p">(</span><span class="n">coalesce</span><span class="p">(</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)))</span> <span class="k">as</span> <span class="n">document</span>
+      <span class="k">FROM</span> <span class="n">post</span>
+      <span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+      <span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+      <span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+      <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span><span class="p">)</span> <span class="n">p_search</span>
+<span class="k">WHERE</span> <span class="n">p_search</span><span class="p">.</span><span class="n">document</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">);</span>
+
+ <span class="n">pid</span> <span class="o">|</span>      <span class="n">p_title</span>
+<span class="c1">-----+--------------------</span>
+   <span class="mi">1</span> <span class="o">|</span> <span class="n">Endangered</span> <span class="n">species</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>This will find our document which contains <code>Endangered</code> and <code>Species</code> or lexemes close enough.</p>
 
 <h3>Language support</h3>
 
 <p>Postgres provides built-ins text search for many languages: Danish, Dutch, English, Finnish, French, German, Hungarian, Italian, Norwegian, Portugese, Romanian, Russian, Spanish, Swedish, Turkish.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;english&#39;, &#39;We are running&#39;);
- to_tsvector
--------------
- &#39;run&#39;:3
-(1 row)
 
-SELECT to_tsvector(&#39;french&#39;, &#39;We are running&#39;);
-        to_tsvector
-----------------------------
- &#39;are&#39;:2 &#39;running&#39;:3 &#39;we&#39;:1
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
+     <span class="n">to_tsvector</span>
+    <span class="c1">-------------</span>
+     <span class="s1">&#39;run&#39;</span><span class="p">:</span><span class="mi">3</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
+    
+    <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
+            <span class="n">to_tsvector</span>
+    <span class="c1">----------------------------</span>
+     <span class="s1">&#39;are&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;running&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;we&#39;</span><span class="p">:</span><span class="mi">1</span>
+    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>A column name can be used to create the <code>tsvector</code> based on our starting model. Let&#39;s assume that <code>post</code> can be written in different languages and post contains a column <code>language</code>.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">ALTER TABLE post ADD language text NOT NULL DEFAULT(&#39;english&#39;);
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">ALTER</span> <span class="k">TABLE</span> <span class="n">post</span> <span class="k">ADD</span> <span class="k">language</span> <span class="nb">text</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">);</span></code></pre></div>
+
 <p>We can now rebuild our document to use this language column.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language::regconfig, post.title) || 
-       to_tsvector(post.language::regconfig, post.content) ||
-       to_tsvector(&#39;simple&#39;, author.name) ||
-       to_tsvector(&#39;simple&#39;, coalesce((string_agg(tag.name, &#39; &#39;)), &#39;&#39;)) as document
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON tag.id = posts_tags.tag_id
-GROUP BY post.id, author.id;
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">coalesce</span><span class="p">((</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)),</span> <span class="s1">&#39;&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">document</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span><span class="p">;</span></code></pre></div>
+
 <p>Without the explicit cast <code>::regconfig</code> the query will have generated an error:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">ERROR:  function to_tsvector(text, text) does not exist
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">ERROR</span><span class="p">:</span>  <span class="k">function</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="nb">text</span><span class="p">,</span> <span class="nb">text</span><span class="p">)</span> <span class="n">does</span> <span class="k">not</span> <span class="n">exist</span></code></pre></div>
+
 <p><code>regconfig</code> is the object identifier type which represents the text search configuration in Postgres: http://www.postgresql.org/docs/9.3/static/datatype-oid.html</p>
 
 <p>Fow now the lexemes of our document will be built using the right language based on <code>post.language</code>.</p>
 
 <p>We also used <code>simple</code> which is one of the built in search text configs that Postgres provides. <code>simple</code> doesn&#39;t ignore stopwords and doesn&#39;t try to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. With <code>simple</code> every group of characters separated by a space is a lexeme; the <code>simple</code> text search config is pratical for data like a persons name for which we may not want to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;simple&#39;, &#39;We are running&#39;);
-        to_tsvector
-----------------------------
- &#39;are&#39;:2 &#39;running&#39;:3 &#39;we&#39;:1
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
+        <span class="n">to_tsvector</span>
+<span class="c1">----------------------------</span>
+ <span class="s1">&#39;are&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;running&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;we&#39;</span><span class="p">:</span><span class="mi">1</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <h3>Accented Character</h3>
 
 <p>When you build a search engine supporting many languages you will also hit the accent problem. In many languages accents are very important and can change the meaning of the word. Postgres ships with an extension call <code>unaccent</code> which is useful to unaccentuate content.  </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE EXTENSION unaccent;
-SELECT unaccent(&#39;èéêë&#39;);
 
- unaccent
-----------
- eeee
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">EXTENSION</span> <span class="n">unaccent</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="n">unaccent</span><span class="p">(</span><span class="s1">&#39;èéêë&#39;</span><span class="p">);</span>
+
+ <span class="n">unaccent</span>
+<span class="c1">----------</span>
+ <span class="n">eeee</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>Let&#39;s add some accented content to our <code>post</code> table.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">INSERT INTO post (id, title, content, author_id, language) 
-VALUES (4, &#39;il était une fois&#39;, &#39;il était une fois un hôtel ...&#39;, 2,&#39;french&#39;)
-</code></pre></div>
-<p>If we want to ignore accents when we build our document, then we can simply do the following:</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language, unaccent(post.title)) || 
-       to_tsvector(post.language, unaccent(post.content)) ||
-       to_tsvector(&#39;simple&#39;, unaccent(author.name)) ||
-       to_tsvector(&#39;simple&#39;, unaccent(coalesce(string_agg(tag.name, &#39; &#39;))))
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON author.id = post.author_id
-GROUP BY p.id
-</code></pre></div>
-<p>That works but it&#39;s a bit cumbersome with more room for mistakes. We can also build a new text search config with support for unaccented characters.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE TEXT SEARCH CONFIGURATION fr ( COPY = french );
-ALTER TEXT SEARCH CONFIGURATION fr ALTER MAPPING
-FOR hword, hword_part, word WITH unaccent, french_stem;
-</code></pre></div>
-<p>When we are using this new text search config, we can see the lexemes </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;french&#39;, &#39;il était une fois&#39;);
- to_tsvector
--------------
- &#39;fois&#39;:4
-(1 row)
 
-SELECT to_tsvector(&#39;fr&#39;, &#39;il était une fois&#39;);
-    to_tsvector
---------------------
- &#39;etait&#39;:2 &#39;fois&#39;:4
-(1 row)
-</code></pre></div>
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">post</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">author_id</span><span class="p">,</span> <span class="k">language</span><span class="p">)</span> 
+<span class="k">VALUES</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;il était une fois&#39;</span><span class="p">,</span> <span class="s1">&#39;il était une fois un hôtel ...&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span><span class="s1">&#39;french&#39;</span><span class="p">)</span></code></pre></div>
+
+<p>If we want to ignore accents when we build our document, then we can simply do the following:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">,</span> <span class="n">unaccent</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">))</span> <span class="o">||</span> 
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">,</span> <span class="n">unaccent</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">))</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">unaccent</span><span class="p">(</span><span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">))</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">unaccent</span><span class="p">(</span><span class="n">coalesce</span><span class="p">(</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">))))</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">p</span><span class="p">.</span><span class="n">id</span></code></pre></div>
+
+<p>That works but it&#39;s a bit cumbersome with more room for mistakes. We can also build a new text search config with support for unaccented characters.</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="nb">TEXT</span> <span class="k">SEARCH</span> <span class="n">CONFIGURATION</span> <span class="n">fr</span> <span class="p">(</span> <span class="k">COPY</span> <span class="o">=</span> <span class="n">french</span> <span class="p">);</span>
+<span class="k">ALTER</span> <span class="nb">TEXT</span> <span class="k">SEARCH</span> <span class="n">CONFIGURATION</span> <span class="n">fr</span> <span class="k">ALTER</span> <span class="n">MAPPING</span>
+<span class="k">FOR</span> <span class="n">hword</span><span class="p">,</span> <span class="n">hword_part</span><span class="p">,</span> <span class="n">word</span> <span class="k">WITH</span> <span class="n">unaccent</span><span class="p">,</span> <span class="n">french_stem</span><span class="p">;</span></code></pre></div>
+
+<p>When we are using this new text search config, we can see the lexemes </p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="s1">&#39;il était une fois&#39;</span><span class="p">);</span>
+ <span class="n">to_tsvector</span>
+<span class="c1">-------------</span>
+ <span class="s1">&#39;fois&#39;</span><span class="p">:</span><span class="mi">4</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
+
+<span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;il était une fois&#39;</span><span class="p">);</span>
+    <span class="n">to_tsvector</span>
+<span class="c1">--------------------</span>
+ <span class="s1">&#39;etait&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;fois&#39;</span><span class="p">:</span><span class="mi">4</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>This gives us the same result as applying <code>unaccent</code> first and building the <code>tsvector</code> from the result.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;french&#39;, unaccent(&#39;il était une fois&#39;));
-    to_tsvector
---------------------
- &#39;etait&#39;:2 &#39;fois&#39;:4
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="n">unaccent</span><span class="p">(</span><span class="s1">&#39;il était une fois&#39;</span><span class="p">));</span>
+    <span class="n">to_tsvector</span>
+<span class="c1">--------------------</span>
+ <span class="s1">&#39;etait&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;fois&#39;</span><span class="p">:</span><span class="mi">4</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>The number of lexemes is different because <code>il était une</code> are stopwords in French. Is it an issue to keep these stop words in our document? I don&#39;t think so as <code>etait</code> is not really a stopword as it&#39;s mispelled.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(&#39;fr&#39;, &#39;Hôtel&#39;) @@ to_tsquery(&#39;hotels&#39;) as result;
- result
---------
- t
-(1 row)
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;Hôtel&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;hotels&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="k">result</span><span class="p">;</span>
+ <span class="k">result</span>
+<span class="c1">--------</span>
+ <span class="n">t</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>If we create an unaccented search config for each language that our <code>post</code> can be written in and we keep this value in <code>post.language</code> then we can keep our previous document query. </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT to_tsvector(post.language, post.title) || 
-       to_tsvector(post.language, post.content) ||
-       to_tsvector(&#39;simple&#39;, author.name) ||
-       to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;)))
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON author.id = post.author_id
-GROUP BY p.id
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">coalesce</span><span class="p">(</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)))</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">p</span><span class="p">.</span><span class="n">id</span></code></pre></div>
+
 <p>If you need to create unaccented text search config for each language supported by Postgres then you can use this <a href="https://gist.github.com/rach/9289959">gist</a></p>
 
 <p>Our document will now likely increase in size because it can unclude unaccented stopwords but we query without caring about accented characters. This can be useful e.g. for somebody with an english keyboard searching french content.</p>
@@ -414,65 +442,67 @@ GROUP BY p.id
 <p>To order our results by revelance PostgreSQL provides a few functions but in our example we will be using only 2 of them : <code>ts_rank()</code> and <code>setweight()</code>.</p>
 
 <p>The function <code>setweight</code> allows us to assign a weight value to a <code>tsvector</code>; the value can be <code>&#39;A&#39;, &#39;B&#39;, &#39;C&#39; or &#39;D&#39;</code></p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT pid, p_title
-FROM (SELECT post.id as pid,
-             post.title as p_title,
-             setweight(to_tsvector(post.language::regconfig, post.title), &#39;A&#39;) || 
-             setweight(to_tsvector(post.language::regconfig, post.content), &#39;B&#39;) ||
-             setweight(to_tsvector(&#39;simple&#39;, author.name), &#39;C&#39;) ||
-             setweight(to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;))), &#39;B&#39;) as document
-      FROM post
-      JOIN author ON author.id = post.author_id
-      JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-      JOIN tag ON tag.id = posts_tags.tag_id
-      GROUP BY post.id, author.id) p_search
-WHERE p_search.document @@ to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)
-ORDER BY ts_rank(p_search.document, to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)) DESC;
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">pid</span><span class="p">,</span> <span class="n">p_title</span>
+<span class="k">FROM</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span> <span class="k">as</span> <span class="n">pid</span><span class="p">,</span>
+             <span class="n">post</span><span class="p">.</span><span class="n">title</span> <span class="k">as</span> <span class="n">p_title</span><span class="p">,</span>
+             <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">),</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
+             <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">)</span> <span class="o">||</span>
+             <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">),</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">||</span>
+             <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">coalesce</span><span class="p">(</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">))),</span> <span class="s1">&#39;B&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">document</span>
+      <span class="k">FROM</span> <span class="n">post</span>
+      <span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+      <span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+      <span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+      <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span><span class="p">)</span> <span class="n">p_search</span>
+<span class="k">WHERE</span> <span class="n">p_search</span><span class="p">.</span><span class="n">document</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">)</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">p_search</span><span class="p">.</span><span class="n">document</span><span class="p">,</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">))</span> <span class="k">DESC</span><span class="p">;</span></code></pre></div>
+
 <p>In the query above, we have assigned different weights to the different fields of a document. <code>post.title</code> is more important than the <code>post.content</code> and as important as <code>tag</code> associated. The least important is the <code>author.name</code>. </p>
 
 <p>This means that if we were to search for the term &#39;Alice&#39; a document that contains that term in its title would be returned before a document that contains the term in its content and document that with an author of that name would be returned last.</p>
 
 <p>Based on the weights assigned to part of our document the <code>ts_rank()</code> returns a floating number which represents the relevancy of our document against the query.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
-               to_tsquery(&#39;example | document&#39;)) as relevancy;
- relevancy
------------
- 0.0607927
-(1 row)
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span> 
+               <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example | document&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
+ <span class="n">relevancy</span>
+<span class="c1">-----------</span>
+ <span class="mi">0</span><span class="p">.</span><span class="mi">0607927</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
 
-SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
-               to_tsquery(&#39;example &#39;)) as relevancy;
- relevancy
------------
- 0.0607927
-(1 row)
+<span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span> 
+               <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example &#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
+ <span class="n">relevancy</span>
+<span class="c1">-----------</span>
+ <span class="mi">0</span><span class="p">.</span><span class="mi">0607927</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
 
-SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
-               to_tsquery(&#39;example | unkown&#39;)) as relevancy;
- relevancy
------------
- 0.0303964
-(1 row)
+<span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span> 
+               <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example | unkown&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
+ <span class="n">relevancy</span>
+<span class="c1">-----------</span>
+ <span class="mi">0</span><span class="p">.</span><span class="mi">0303964</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
 
-SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;),
-               to_tsquery(&#39;example &amp; document&#39;)) as relevancy;
- relevancy
------------
- 0.0985009
-(1 row)
+<span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span>
+               <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example &amp; document&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
+ <span class="n">relevancy</span>
+<span class="c1">-----------</span>
+ <span class="mi">0</span><span class="p">.</span><span class="mi">0985009</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
 
-SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;), 
-               to_tsquery(&#39;example &amp; unknown&#39;)) as relevancy;
- relevancy
------------
- 1e-20
-(1 row)
-</code></pre></div>
+<span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span> 
+               <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example &amp; unknown&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
+ <span class="n">relevancy</span>
+<span class="c1">-----------</span>
+ <span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">20</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>However, the concept of relevancy is vague and very application-specific. Different applications might require additional information for ranking, e.g., document modification time. The built-in ranking functions such as <code>ts_rank</code> are only examples. You can write your own ranking functions and/or combine their results with additional factors to fit your specific needs. </p>
 
 <p>To illustrate the paragraph above, if we wanted to promote newer posts against older ones we could divide the ts_rank value by the age of the document +1 (to avoid dividing by zero).</p>
@@ -480,10 +510,11 @@ SELECT ts_rank(to_tsvector(&#39;This is an example of document&#39;),
 <h3>OPTIMIZATION AND Indexing</h3>
 
 <p>To optimize the search on one table is straight forward. PostgreSQL supports function based indexes so you can simply create a GIN index around the <code>tsvector()</code> function.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE INDEX idx_fts_post ON post 
-USING gin(setweight(to_tsvector(language, title),&#39;A&#39;) || 
-           setweight(to_tsvector(language, content), &#39;B&#39;));
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_fts_post</span> <span class="k">ON</span> <span class="n">post</span> 
+<span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">,</span> <span class="n">title</span><span class="p">),</span><span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">,</span> <span class="n">content</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">));</span></code></pre></div>
+
 <p>GIN or GiST indexes? These two indexes could be subject of a blog post themselves. GiST can produce false matches which then requires a extra table row lookup to confirm the match. On the other hand, GIN is faster to query but bigger and slower to build.</p>
 
 <blockquote>
@@ -499,30 +530,33 @@ USING gin(setweight(to_tsvector(language, title),&#39;A&#39;) ||
 <p>You don&#39;t always need to denormalise and in some cases you can add a function based index as we did above. Alternatively you can easily denormalise data from the same table via the postgres trigger function <code>tsvector_update_trigger(...)</code> or <code>tsvector_update_trigger_column(...)</code>. See the <a href="http://www.postgresql.org/docs/9.3/static/textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS">Postgres doc</a> for more detailed information.</p>
 
 <p>For our application there being some some delay before results are returned via the search can be acceptable. This is a good use case for using a Materialized View so we can add an extra index on it.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE MATERIALIZED VIEW search_index AS 
-SELECT post.id,
-       post.title,
-       setweight(to_tsvector(post.language::regconfig, post.title), &#39;A&#39;) || 
-       setweight(to_tsvector(post.language::regconfig, post.content), &#39;B&#39;) ||
-       setweight(to_tsvector(&#39;simple&#39;, author.name), &#39;C&#39;) ||
-       setweight(to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;))), &#39;A&#39;) as document
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON tag.id = posts_tags.tag_id
-GROUP BY post.id, author.id
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">search_index</span> <span class="k">AS</span> 
+<span class="k">SELECT</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
+       <span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">,</span>
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">),</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="k">language</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">name</span><span class="p">),</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span> <span class="o">||</span>
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="n">coalesce</span><span class="p">(</span><span class="n">string_agg</span><span class="p">(</span><span class="n">tag</span><span class="p">.</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">))),</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">document</span>
+<span class="k">FROM</span> <span class="n">post</span>
+<span class="k">JOIN</span> <span class="n">author</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
+<span class="k">JOIN</span> <span class="n">posts_tags</span> <span class="k">ON</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">post_id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">tag</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">posts_tags</span><span class="p">.</span><span class="n">tag_id</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span></code></pre></div>
+
 <p>Then reindexing the search engine will be as simple as periodically running   <code>REFRESH MATERIALIZED VIEW search_index;</code>.</p>
 
 <p>We can now add an index on the materialized view.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text"> CREATE INDEX idx_fts_search ON search_index USING gin(document);
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_fts_search</span> <span class="k">ON</span> <span class="n">search_index</span> <span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">document</span><span class="p">);</span></code></pre></div>
+
 <p>And querying will become much simpler too.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT id as post_id, title
-FROM search_index
-WHERE document @@ to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)
-ORDER BY ts_rank(p_search.document, to_tsquery(&#39;english&#39;, &#39;Endangered &amp; Species&#39;)) DESC;
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">id</span> <span class="k">as</span> <span class="n">post_id</span><span class="p">,</span> <span class="n">title</span>
+<span class="k">FROM</span> <span class="n">search_index</span>
+<span class="k">WHERE</span> <span class="n">document</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">)</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">p_search</span><span class="p">.</span><span class="n">document</span><span class="p">,</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">))</span> <span class="k">DESC</span><span class="p">;</span></code></pre></div>
+
 <p>If you cannot afford delay then you may have to investigate the alternative method using triggers.</p>
 
 <p>There is not one way to build your document store; it will depend on what comprises your document: single table, multiple table, multiple languages, amount of data ...</p>
@@ -532,64 +566,70 @@ ORDER BY ts_rank(p_search.document, to_tsquery(&#39;english&#39;, &#39;Endangere
 <h3>Mispelling</h3>
 
 <p>PostgreSQL comes with a very useful extenstion called <code>pg_trgm</code>. See <a href="http://www.postgresql.org/docs/9.3/static/pgtrgm.html">pg_trgm doc</a>.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE EXTENSION pg_trgm;
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">EXTENSION</span> <span class="n">pg_trgm</span><span class="p">;</span></code></pre></div>
+
 <p>This provides support for trigram which is a <a href="http://en.wikipedia.org/wiki/N-gram">N-gram with</a> <code>N == 3</code>. N-grams are useful because they allow finding strings with similar characters and, in essence, that&#39;s what a misspelling is - a word that is similar but not quite right.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT similarity(&#39;Something&#39;, &#39;something&#39;);
- similarity
-------------
-     1
-(1 row)
 
-SELECT similarity(&#39;Something&#39;, &#39;samething&#39;);
- similarity
-------------
-  0.538462
-(1 row)
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">similarity</span><span class="p">(</span><span class="s1">&#39;Something&#39;</span><span class="p">,</span> <span class="s1">&#39;something&#39;</span><span class="p">);</span>
+ <span class="n">similarity</span>
+<span class="c1">------------</span>
+     <span class="mi">1</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
-SELECT similarity(&#39;Something&#39;, &#39;unrelated&#39;);
- similarity
-------------
-     0
-(1 row)
+<span class="k">SELECT</span> <span class="n">similarity</span><span class="p">(</span><span class="s1">&#39;Something&#39;</span><span class="p">,</span> <span class="s1">&#39;samething&#39;</span><span class="p">);</span>
+ <span class="n">similarity</span>
+<span class="c1">------------</span>
+  <span class="mi">0</span><span class="p">.</span><span class="mi">538462</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
-SELECT similarity(&#39;Something&#39;, &#39;everything&#39;);
- similarity                                          
-------------
-   0.235294
-(1 row)
+<span class="k">SELECT</span> <span class="n">similarity</span><span class="p">(</span><span class="s1">&#39;Something&#39;</span><span class="p">,</span> <span class="s1">&#39;unrelated&#39;</span><span class="p">);</span>
+ <span class="n">similarity</span>
+<span class="c1">------------</span>
+     <span class="mi">0</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
 
-SELECT similarity(&#39;Something&#39;, &#39;omething&#39;);
- similarity
-------------
-   0.583333
-(1 row)
-</code></pre></div>
+<span class="k">SELECT</span> <span class="n">similarity</span><span class="p">(</span><span class="s1">&#39;Something&#39;</span><span class="p">,</span> <span class="s1">&#39;everything&#39;</span><span class="p">);</span>
+ <span class="n">similarity</span>                                          
+<span class="c1">------------</span>
+   <span class="mi">0</span><span class="p">.</span><span class="mi">235294</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
+
+<span class="k">SELECT</span> <span class="n">similarity</span><span class="p">(</span><span class="s1">&#39;Something&#39;</span><span class="p">,</span> <span class="s1">&#39;omething&#39;</span><span class="p">);</span>
+ <span class="n">similarity</span>
+<span class="c1">------------</span>
+   <span class="mi">0</span><span class="p">.</span><span class="mi">583333</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
 <p>With the examples above you can see that similarity returns a float to represent the similarity between two strings. To detect mispelling is then a matter of collecting the lexemes used by our documents and comparing the similarity with our search input. I found that 0.5 is good number to test similarity of mispelling. First we need to create this list of unique lexemes used by our documents.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE MATERIALIZED VIEW unique_lexeme AS
-SELECT word FROM ts_stat(
-&#39;SELECT to_tsvector(&#39;simple&#39;, post.title) || 
-    to_tsvector(&#39;simple&#39;, post.content) ||
-    to_tsvector(&#39;simple&#39;, author.name) ||
-    to_tsvector(&#39;simple&#39;, coalesce(string_agg(tag.name, &#39; &#39;)))
-FROM post
-JOIN author ON author.id = post.author_id
-JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id
-JOIN tag ON tag.id = posts_tags.tag_id
-GROUP BY post.id, author.id&#39;);
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">unique_lexeme</span> <span class="k">AS</span>
+<span class="k">SELECT</span> <span class="n">word</span> <span class="k">FROM</span> <span class="n">ts_stat</span><span class="p">(</span>
+<span class="s1">&#39;SELECT to_tsvector(&#39;</span><span class="k">simple</span><span class="s1">&#39;, post.title) || </span>
+<span class="s1">    to_tsvector(&#39;</span><span class="k">simple</span><span class="s1">&#39;, post.content) ||</span>
+<span class="s1">    to_tsvector(&#39;</span><span class="k">simple</span><span class="s1">&#39;, author.name) ||</span>
+<span class="s1">    to_tsvector(&#39;</span><span class="k">simple</span><span class="s1">&#39;, coalesce(string_agg(tag.name, &#39;</span> <span class="s1">&#39;)))</span>
+<span class="s1">FROM post</span>
+<span class="s1">JOIN author ON author.id = post.author_id</span>
+<span class="s1">JOIN posts_tags ON posts_tags.post_id = posts_tags.tag_id</span>
+<span class="s1">JOIN tag ON tag.id = posts_tags.tag_id</span>
+<span class="s1">GROUP BY post.id, author.id&#39;</span><span class="p">);</span></code></pre></div>
+
 <p>The query above builds a view with one column called <code>word</code> from all the unique lexemes of our documents. We used <code>simple</code> because our content can be in multiple languages. Once we create this materialized view we need to add an index to make a similarity query faster.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">CREATE INDEX words_idx ON search_words USING gin(word gin_trgm_ops);
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">words_idx</span> <span class="k">ON</span> <span class="n">search_words</span> <span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">word</span> <span class="n">gin_trgm_ops</span><span class="p">);</span></code></pre></div>
+
 <p>Luckily unique lexemes used in a search engine is not something that will change rapidly so we possibly won&#39;t have to refresh the materialized view too often via:  </p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">REFRESH MATERIALIZED VIEW unique_lexeme;
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">REFRESH</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">unique_lexeme</span><span class="p">;</span></code></pre></div>
+
 <p>Once we have built this table finding the closest match is very simple.</p>
-<div class="highlight"><pre><code class="language-text" data-lang="text">SELECT word 
-WHERE similarity(word, &#39;samething&#39;) &gt; 0.5 
-ORDER BY word &lt;-&gt; &#39;samething&#39;
-LIMIT 1; 
-</code></pre></div>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">word</span> 
+<span class="k">WHERE</span> <span class="n">similarity</span><span class="p">(</span><span class="n">word</span><span class="p">,</span> <span class="s1">&#39;samething&#39;</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span> 
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="n">word</span> <span class="o">&lt;-&gt;</span> <span class="s1">&#39;samething&#39;</span>
+<span class="k">LIMIT</span> <span class="mi">1</span><span class="p">;</span></code></pre></div>
+
 <p>This query returns a lexeme which is similar enough (<code>&gt;0.5</code>) to the search input <code>samething</code> ordered by the closest first. The operator <code>&lt;-&gt;</code> returns the &quot;distance&quot; between the arguments, that is one minus the <code>similarity()</code> value. </p>
 
 <p>When you decide to handle mispelling in your search you may want to not look for misspellings on every query. Instead you could query for misspellings only when the search returns no results and use the results of that query to provide some suggestions to your user. It is also possible that your data may contain misspellings if it comes from some source of informal communication such as a social network in which case you may obtain good results by appending the similar lexeme to your <code>tsquery</code>.</p>
