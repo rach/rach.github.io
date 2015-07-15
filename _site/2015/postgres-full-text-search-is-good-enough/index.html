@@ -37,7 +37,7 @@
     <section id="post-body">
         <p>When you have to build a web application, you are often asked to add search. The magnifying glass is something that we now add to wireframes without even knowing what we are going to search.</p>
 
-<p>Search has became an important feature and we&#39;ve seen a big increase in the popularity of tools like <a href="http://elasticsearch.org/">elasticsearch</a> and <a href="https://lucene.apache.org/solr/">SOLR</a> which are both based on <a href="https://lucene.apache.org/">lucene</a>. They are great tools but before going down the road of Weapons of Mass ~~Destruction~~ Search, maybe what you need is something a bit lighter which is simply <strong>good enough</strong>! </p>
+<p>The search has become an important feature and we&#39;ve seen a big increase in the popularity of tools like <a href="http://elasticsearch.org/">elasticsearch</a> and <a href="https://lucene.apache.org/solr/">SOLR</a> which are both based on <a href="https://lucene.apache.org/">lucene</a>. They are great tools but before going down the road of Weapons of Mass <del>Destruction</del> Search, maybe what you need is something a bit lighter which is simply <strong>good enough</strong>! </p>
 
 <p>What do you I mean by &#39;good enough&#39;? I mean a search engine with the following features:</p>
 
@@ -45,20 +45,20 @@
 <li><a href="http://en.wikipedia.org/wiki/Stemming">Stemming</a></li>
 <li>Ranking / Boost</li>
 <li>Support Multiple languages</li>
-<li>Fuzzy search for mispelling </li>
+<li>Fuzzy search for misspelling</li>
 <li>Accent support </li>
 </ul>
 
 <p>Luckily PostgreSQL supports all these features.</p>
 
-<p>This post is aimed at people who :</p>
+<p>This post is aimed at people who:</p>
 
 <ul>
 <li>use PostgreSQL and don&#39;t want to install an extra dependency for their search engine.</li>
 <li>use an alternative database (eg: MySQL) and have the need for better full-text search features. </li>
 </ul>
 
-<p>In this post we are going to progressively illustrate some of the full-text search features in Postgres based on the following tables and data:</p>
+<p>In this post, we are going to progressively illustrate some of the full-text search features in Postgres based on the following tables and data:</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">author</span><span class="p">(</span>
    <span class="n">id</span> <span class="nb">SERIAL</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
@@ -106,38 +106,38 @@
        <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> 
        <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span></code></pre></div>
 
-<p>It&#39;s a traditional blog-like application with <code>post</code> objects, which have a <code>title</code> and <code>content</code>. A <code>post</code> is associated to an <code>author</code> via a foreign key. A <code>post</code> itself can have multiple tags  </p>
+<p>It&#39;s a traditional blog-like application with <code>post</code> objects, which have a <code>title</code> and <code>content</code>. A <code>post</code> is associated to an <code>author</code> via a foreign key. A <code>post</code> itself can have multiple tags. </p>
 
 <h3>What is Full-Text Search.</h3>
 
 <p>First, let&#39;s look at the definition:</p>
 
 <blockquote>
-<p>In text retrieval, <strong>full-text search</strong> refers to techniques for searching a single computer-stored <strong>document</strong> or a collection in a full text database. Full-text search is distinguished from searches based on metadata or on parts of the original texts represented in databases.</p>
+<p>In text retrieval, <strong>full-text search</strong> refers to techniques for searching a single computer-stored <strong>document</strong> or a collection in a full-text database. The full-text search is distinguished from searches based on metadata or on parts of the original texts represented in databases.</p>
 
 <p>-- <a href="http://en.wikipedia.org/wiki/Full_text_search">Wikipedia</a></p>
 </blockquote>
 
-<p>This definition introduces the concept of a document, which is important. When you run a search accross your data, you are looking into meaningful entities for which you want to search, these are your documents! The PostgreSQL documentation explains it amazingly.</p>
+<p>This definition introduces the concept of a document, which is important. When you run a search across your data, you are looking into meaningful entities for which you want to search, these are your documents! The PostgreSQL documentation explains it amazingly.</p>
 
 <blockquote>
-<p>A document is the unit of searching in a full text search system; for example, a magazine article or email message. </p>
+<p>A document is the unit of searching in a full-text search system; for example, a magazine article or email message. </p>
 
 <p>-- <site><a href="http://www.postgresql.org/docs/9.3/static/textsearch-intro.html#TEXTSEARCH-DOCUMENT">Postgres documentation</a></p>
 </blockquote>
 
-<p>This document can be accross multiple tables and it represents a logical entity which we want to search for.</p>
+<p>This document can be across multiple tables and it represents a logical entity which we want to search for.</p>
 
 <h3>Build our document</h3>
 
-<p>In the previous section we introduced the concept of document. A document is not related to our table schema but to data; together these represent a meaningful object.
+<p>In the previous section, we introduced the concept of document. A document is not related to our table schema but to data; together these represent a meaningful object.
 Based on our example schema, the document is composed of:</p>
 
 <ul>
 <li><code>post.title</code></li>
 <li><code>post.content</code></li>
 <li><code>author.name</code> of the <code>post</code></li>
-<li>all <code>tag.name</code>s associated to the <code>post</code></li>
+<li>all <code>tag.name</code> associated to the <code>post</code></li>
 </ul>
 
 <p>To create our document based on this criteria imagine this SQL query:</p>
@@ -163,7 +163,7 @@ Based on our example schema, the document is composed of:</p>
 
 <p>We also used <code>coalesce()</code>. When a value can be <code>NULL</code> then it&#39;s good practice to use the <code>coalesce()</code> function, otherwise the concatenation will result in a <code>NULL</code> value too.</p>
 
-<p>At this stage our document is simply a long <code>string</code> and this doesn&#39;t help us; we need to transform it into the right format via the function <code>to_tsvector()</code>.</p>
+<p>At this stage, our document is simply a long <code>string</code> and this doesn&#39;t help us; we need to transform it into the right format via the function <code>to_tsvector()</code>.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">title</span><span class="p">)</span> <span class="o">||</span> 
        <span class="n">to_tsvector</span><span class="p">(</span><span class="n">post</span><span class="p">.</span><span class="n">content</span><span class="p">)</span> <span class="o">||</span>
@@ -193,19 +193,19 @@ Based on our example schema, the document is composed of:</p>
 <span class="s1">&#39;becom&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span><span class="mi">13</span> <span class="s1">&#39;man&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">,</span><span class="mi">15</span> <span class="s1">&#39;rather&#39;</span><span class="p">:</span><span class="mi">10</span> <span class="s1">&#39;success&#39;</span><span class="p">:</span><span class="mi">8</span> <span class="s1">&#39;tri&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="mi">11</span> <span class="s1">&#39;valu&#39;</span><span class="p">:</span><span class="mi">17</span>
 <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
-<p>Something weird just happened. First there are less words than in the original sentence, some of the words are different (<code>try</code> became <code>tri</code>) and they are all followed by numbers. Why?</p>
+<p>Something weird just happened. First there are fewer words than in the original sentence, some of the words are different (<code>try</code> became <code>tri</code>) and they are all followed by numbers. Why?</p>
 
 <p>A <code>tsvector</code> value is a sorted list of distinct lexemes which are words that have been normalized to make different variants of the same word look alike.
 For example, normalization almost always includes folding upper-case letters to lower-case and often involves removal of suffixes (such as &#39;s&#39;, &#39;es&#39; or &#39;ing&#39; in English). This allows searches to find variant forms of the same word without tediously entering all the possible variants.</p>
 
 <p>The numbers represent the location of the lexeme in the original string. For example, &quot;man&quot; is present at position 6 and 15. Try counting the words and see for yourself.</p>
 
-<p>By default Postgres uses <code>&#39;english&#39;</code> as text search configuration for the function <code>to_tsvector</code> and it will also ignore english stopwords. 
-That explains why the <code>tsvector</code> results have less elements than the ones in our sentence. We see later a bit more about languages and text search configuration.</p>
+<p>By default, Postgres uses <code>&#39;english&#39;</code> as text search configuration for the function <code>to_tsvector</code> and it will also ignore english stopwords. 
+That explains why the <code>tsvector</code> results have fewer elements than the ones in our sentence. We see later a bit more about languages and text search configuration.</p>
 
 <h3>Querying</h3>
 
-<p>We have seen how to build a document but the goal here is to find the document. For running a query against a <code>tsvector</code> we can use the <code>@@</code> operator which is documented <a href="http://www.postgresql.org/docs/9.3/static/functions-textsearch.html#FUNCTIONS-TEXTSEARCH">here</a>. Let&#39;s see some examples on how to query our document.</p>
+<p>We have seen how to build a document, but the goal here is to find the document. For running a query against a <code>tsvector</code> we can use the <code>@@</code> operator which is documented <a href="http://www.postgresql.org/docs/9.3/static/functions-textsearch.html#FUNCTIONS-TEXTSEARCH">here</a>. Let&#39;s see some examples on how to query our document.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">select</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If you can dream it, you can do it&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="s1">&#39;dream&#39;</span><span class="p">;</span>
  <span class="o">?</span><span class="k">column</span><span class="o">?</span>
@@ -248,34 +248,34 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <p>A tsquery value stores lexemes that are to be searched for, and combines them honoring the Boolean operators &amp; (AND), | (OR), and ! (NOT). Parentheses can be used to enforce grouping of the operators</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If the facts don&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="o">!</span> <span class="n">fact</span><span class="s1">&#39;);</span>
-<span class="s1">    </span>
-<span class="s1">     ?column?</span>
-<span class="s1">    ----------</span>
-<span class="s1">     f</span>
-<span class="s1">    (1 row)</span>
 
-<span class="s1">    &gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">theory</span> <span class="o">&amp;</span> <span class="o">!</span><span class="n">fact</span><span class="s1">&#39;);</span>
-<span class="s1">    </span>
-<span class="s1">     ?column?</span>
-<span class="s1">    ----------</span>
-<span class="s1">     f</span>
-<span class="s1">    (1 row)</span>
-<span class="s1">    </span>
-<span class="s1">    &gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="p">.</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">fiction</span> <span class="o">|</span> <span class="n">theory</span><span class="err">&#39;</span><span class="p">);</span>
-    
-     <span class="o">?</span><span class="k">column</span><span class="o">?</span>
-    <span class="c1">----------</span>
-     <span class="n">t</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+<span class="s1"> ?column?</span>
+<span class="s1">----------</span>
+<span class="s1"> f</span>
+<span class="s1">(1 row)</span>
+
+<span class="s1">&gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">theory</span> <span class="o">&amp;</span> <span class="o">!</span><span class="n">fact</span><span class="s1">&#39;);</span>
+
+<span class="s1"> ?column?</span>
+<span class="s1">----------</span>
+<span class="s1"> f</span>
+<span class="s1">(1 row)</span>
+
+<span class="s1">&gt; SELECT to_tsvector(&#39;</span><span class="n">If</span> <span class="n">the</span> <span class="n">facts</span> <span class="n">don</span><span class="s1">&#39;&#39;</span><span class="n">t</span> <span class="n">fit</span> <span class="n">the</span> <span class="n">theory</span><span class="p">,</span> <span class="n">change</span> <span class="n">the</span> <span class="n">facts</span><span class="p">.</span><span class="s1">&#39;) @@ to_tsquery(&#39;</span><span class="n">fiction</span> <span class="o">|</span> <span class="n">theory</span><span class="err">&#39;</span><span class="p">);</span>
+
+ <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+<span class="c1">----------</span>
+ <span class="n">t</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
 <p>We can also use startwith query style when using <code>:*</code>.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="o">&gt;</span> <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;If the facts don&#39;&#39;t fit the theory, change the facts.&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;theo:*&#39;</span><span class="p">);</span>
-    
-     <span class="o">?</span><span class="k">column</span><span class="o">?</span>
-    <span class="c1">----------</span>
-     <span class="n">t</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+
+ <span class="o">?</span><span class="k">column</span><span class="o">?</span>
+<span class="c1">----------</span>
+ <span class="n">t</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
 <p>Now that we know how to make a full-text search query, we can come back to our initial table schema and try to query our documents.</p>
 
@@ -302,19 +302,19 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <h3>Language support</h3>
 
-<p>Postgres provides built-ins text search for many languages: Danish, Dutch, English, Finnish, French, German, Hungarian, Italian, Norwegian, Portugese, Romanian, Russian, Spanish, Swedish, Turkish.</p>
+<p>Postgres provides built-ins text search for many languages: Danish, Dutch, English, Finnish, French, German, Hungarian, Italian, Norwegian, Portuguese, Romanian, Russian, Spanish, Swedish, Turkish.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
-     <span class="n">to_tsvector</span>
-    <span class="c1">-------------</span>
-     <span class="s1">&#39;run&#39;</span><span class="p">:</span><span class="mi">3</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
-    
-    <span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
-            <span class="n">to_tsvector</span>
-    <span class="c1">----------------------------</span>
-     <span class="s1">&#39;are&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;running&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;we&#39;</span><span class="p">:</span><span class="mi">1</span>
-    <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
+ <span class="n">to_tsvector</span>
+<span class="c1">-------------</span>
+ <span class="s1">&#39;run&#39;</span><span class="p">:</span><span class="mi">3</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span>
+
+<span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;french&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
+        <span class="n">to_tsvector</span>
+<span class="c1">----------------------------</span>
+ <span class="s1">&#39;are&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;running&#39;</span><span class="p">:</span><span class="mi">3</span> <span class="s1">&#39;we&#39;</span><span class="p">:</span><span class="mi">1</span>
+<span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
 <p>A column name can be used to create the <code>tsvector</code> based on our starting model. Let&#39;s assume that <code>post</code> can be written in different languages and post contains a column <code>language</code>.</p>
 
@@ -340,7 +340,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <p>Fow now the lexemes of our document will be built using the right language based on <code>post.language</code>.</p>
 
-<p>We also used <code>simple</code> which is one of the built in search text configs that Postgres provides. <code>simple</code> doesn&#39;t ignore stopwords and doesn&#39;t try to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. With <code>simple</code> every group of characters separated by a space is a lexeme; the <code>simple</code> text search config is pratical for data like a persons name for which we may not want to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. </p>
+<p>We also used <code>simple</code> which is one of the built in search text configs that Postgres provides. <code>simple</code> doesn&#39;t ignore stopwords and doesn&#39;t try to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. With <code>simple</code> every group of characters separated by a space is a lexeme; the <code>simple</code> text search config is pratical for data like a person&#39;s name for which we may not want to find the <a href="http://en.wikipedia.org/wiki/Stemming">stem</a> of the word. </p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="s1">&#39;We are running&#39;</span><span class="p">);</span>
         <span class="n">to_tsvector</span>
@@ -350,7 +350,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <h3>Accented Character</h3>
 
-<p>When you build a search engine supporting many languages you will also hit the accent problem. In many languages accents are very important and can change the meaning of the word. Postgres ships with an extension call <code>unaccent</code> which is useful to unaccentuate content.  </p>
+<p>When you build a search engine supporting many languages you will also hit the accent problem. In many languages, accents are very important and can change the meaning of the word. Postgres ships with an extension call <code>unaccent</code> which is useful to unaccentuate content.  </p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">EXTENSION</span> <span class="n">unaccent</span><span class="p">;</span>
 <span class="k">SELECT</span> <span class="n">unaccent</span><span class="p">(</span><span class="s1">&#39;èéêë&#39;</span><span class="p">);</span>
@@ -377,7 +377,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <span class="k">JOIN</span> <span class="n">tag</span> <span class="k">ON</span> <span class="n">author</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">post</span><span class="p">.</span><span class="n">author_id</span>
 <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">p</span><span class="p">.</span><span class="n">id</span></code></pre></div>
 
-<p>That works but it&#39;s a bit cumbersome with more room for mistakes. We can also build a new text search config with support for unaccented characters.</p>
+<p>That works, but it&#39;s a bit cumbersome with more room for mistakes. We can also build a new text search config with support for unaccented characters.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="nb">TEXT</span> <span class="k">SEARCH</span> <span class="n">CONFIGURATION</span> <span class="n">fr</span> <span class="p">(</span> <span class="k">COPY</span> <span class="o">=</span> <span class="n">french</span> <span class="p">);</span>
 <span class="k">ALTER</span> <span class="nb">TEXT</span> <span class="k">SEARCH</span> <span class="n">CONFIGURATION</span> <span class="n">fr</span> <span class="k">ALTER</span> <span class="n">MAPPING</span>
@@ -405,7 +405,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
  <span class="s1">&#39;etait&#39;</span><span class="p">:</span><span class="mi">2</span> <span class="s1">&#39;fois&#39;</span><span class="p">:</span><span class="mi">4</span>
 <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
-<p>The number of lexemes is different because <code>il était une</code> are stopwords in French. Is it an issue to keep these stop words in our document? I don&#39;t think so as <code>etait</code> is not really a stopword as it&#39;s mispelled.</p>
+<p>The number of lexemes is different because <code>il était une</code> are stopwords in French. Is it an issue to keep these stop words in our document? I don&#39;t think so as <code>etait</code> is not really a stopword as it&#39;s misspelled.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;fr&#39;</span><span class="p">,</span> <span class="s1">&#39;Hôtel&#39;</span><span class="p">)</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;hotels&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="k">result</span><span class="p">;</span>
  <span class="k">result</span>
@@ -427,7 +427,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <p>If you need to create unaccented text search config for each language supported by Postgres then you can use this <a href="https://gist.github.com/rach/9289959">gist</a></p>
 
-<p>Our document will now likely increase in size because it can unclude unaccented stopwords but we query without caring about accented characters. This can be useful e.g. for somebody with an english keyboard searching french content.</p>
+<p>Our document will now likely increase in size because it can include unaccented stopwords but we query it without caring about accented characters. This can be useful e.g. for somebody with an english keyboard searching french content.</p>
 
 <h3>Ranking</h3>
 
@@ -439,7 +439,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <p>-- <a href="http://www.postgresql.org/docs/9.3/static/textsearch-controls.html#TEXTSEARCH-RANKING">PostgreSQL documentation</a></p>
 </blockquote>
 
-<p>To order our results by revelance PostgreSQL provides a few functions but in our example we will be using only 2 of them : <code>ts_rank()</code> and <code>setweight()</code>.</p>
+<p>To order our results by relevance PostgreSQL provides a few functions but in our example we will be using only 2 of them: <code>ts_rank()</code> and <code>setweight()</code>.</p>
 
 <p>The function <code>setweight</code> allows us to assign a weight value to a <code>tsvector</code>; the value can be <code>&#39;A&#39;, &#39;B&#39;, &#39;C&#39; or &#39;D&#39;</code></p>
 
@@ -458,11 +458,11 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <span class="k">WHERE</span> <span class="n">p_search</span><span class="p">.</span><span class="n">document</span> <span class="o">@@</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">)</span>
 <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">p_search</span><span class="p">.</span><span class="n">document</span><span class="p">,</span> <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;english&#39;</span><span class="p">,</span> <span class="s1">&#39;Endangered &amp; Species&#39;</span><span class="p">))</span> <span class="k">DESC</span><span class="p">;</span></code></pre></div>
 
-<p>In the query above, we have assigned different weights to the different fields of a document. <code>post.title</code> is more important than the <code>post.content</code> and as important as <code>tag</code> associated. The least important is the <code>author.name</code>. </p>
+<p>In the query above, we have assigned different weights to the different fields of a document. <code>post.title</code> is more important than the <code>post.content</code> and as important as the <code>tag</code> associated. The least important is the <code>author.name</code>. </p>
 
 <p>This means that if we were to search for the term &#39;Alice&#39; a document that contains that term in its title would be returned before a document that contains the term in its content and document that with an author of that name would be returned last.</p>
 
-<p>Based on the weights assigned to part of our document the <code>ts_rank()</code> returns a floating number which represents the relevancy of our document against the query.</p>
+<p>Based on the weights assigned to parts of our document the <code>ts_rank()</code> returns a floating number which represents the relevancy of our document against the query.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">ts_rank</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="s1">&#39;This is an example of document&#39;</span><span class="p">),</span> 
                <span class="n">to_tsquery</span><span class="p">(</span><span class="s1">&#39;example | document&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">relevancy</span><span class="p">;</span>
@@ -507,9 +507,9 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <p>To illustrate the paragraph above, if we wanted to promote newer posts against older ones we could divide the ts_rank value by the age of the document +1 (to avoid dividing by zero).</p>
 
-<h3>OPTIMIZATION AND Indexing</h3>
+<h3>Optimization and Indexing</h3>
 
-<p>To optimize the search on one table is straight forward. PostgreSQL supports function based indexes so you can simply create a GIN index around the <code>tsvector()</code> function.</p>
+<p>Optimizing the search on one table is straight forward. PostgreSQL supports function based indexes so you can simply create a GIN index around the <code>tsvector()</code> function.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_fts_post</span> <span class="k">ON</span> <span class="n">post</span> 
 <span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">,</span> <span class="n">title</span><span class="p">),</span><span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
@@ -518,18 +518,18 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <p>GIN or GiST indexes? These two indexes could be subject of a blog post themselves. GiST can produce false matches which then requires a extra table row lookup to confirm the match. On the other hand, GIN is faster to query but bigger and slower to build.</p>
 
 <blockquote>
-<p>As a rule of thumb, GIN indexes are best for static data because lookups are faster. For dynamic data, GiST indexes are faster to update. Specifically, GiST indexes are very good for dynamic data and fast if the number of unique words (lexemes) is under 100,000, while GIN indexes will handle 100,000+ lexemes better but are slower to update.</p>
+<p>As a rule of thumb, GIN indexes are best for static data because lookups are faster. For dynamic data, GiST indexes are faster to update. Specifically, GiST indexes are very good for dynamic data and fast if the number of unique words (lexemes) is under 100,000 while GIN indexes will handle 100,000+ lexemes better but are slower to update.</p>
 
 <p>-- <a href="http://www.postgresql.org/docs/9.1/static/textsearch-indexes.html">Postgres doc : Chap 12 Full Text Search</a></p>
 </blockquote>
 
 <p>For our example, we will be using GIN but the choice can be argued and you need to take your own decision based on your data.</p>
 
-<p>We have a problem in our schema example; the document is spread accross multiple tables with different weights. For a better performance it&#39;s necessary to denormalize the data via triggers or materialized view. </p>
+<p>We have a problem in our schema example; the document is spread across multiple tables with different weights. For a better performance it&#39;s necessary to denormalize the data via triggers or materialized view. </p>
 
 <p>You don&#39;t always need to denormalise and in some cases you can add a function based index as we did above. Alternatively you can easily denormalise data from the same table via the postgres trigger function <code>tsvector_update_trigger(...)</code> or <code>tsvector_update_trigger_column(...)</code>. See the <a href="http://www.postgresql.org/docs/9.3/static/textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS">Postgres doc</a> for more detailed information.</p>
 
-<p>For our application there being some some delay before results are returned via the search can be acceptable. This is a good use case for using a Materialized View so we can add an extra index on it.</p>
+<p>If it&#39;s acceptable of having some delay before a document can be found via search query then this may be a good use case for using a Materialized View so we can build an extra index on it.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">search_index</span> <span class="k">AS</span> 
 <span class="k">SELECT</span> <span class="n">post</span><span class="p">.</span><span class="n">id</span><span class="p">,</span>
@@ -601,7 +601,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
    <span class="mi">0</span><span class="p">.</span><span class="mi">583333</span>
 <span class="p">(</span><span class="mi">1</span> <span class="k">row</span><span class="p">)</span></code></pre></div>
 
-<p>With the examples above you can see that similarity returns a float to represent the similarity between two strings. To detect mispelling is then a matter of collecting the lexemes used by our documents and comparing the similarity with our search input. I found that 0.5 is good number to test similarity of mispelling. First we need to create this list of unique lexemes used by our documents.</p>
+<p>With the examples above you can see that similarity returns a float to represent the similarity between two strings. To detect misspelling is then a matter of collecting the lexemes used by our documents and comparing the similarities with our search input. I found that 0.5 is a good number to test the similarity of misspelling. First we need to create this list of unique lexemes used by our documents.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">unique_lexeme</span> <span class="k">AS</span>
 <span class="k">SELECT</span> <span class="n">word</span> <span class="k">FROM</span> <span class="n">ts_stat</span><span class="p">(</span>
@@ -615,11 +615,11 @@ That explains why the <code>tsvector</code> results have less elements than the 
 <span class="s1">JOIN tag ON tag.id = posts_tags.tag_id</span>
 <span class="s1">GROUP BY post.id, author.id&#39;</span><span class="p">);</span></code></pre></div>
 
-<p>The query above builds a view with one column called <code>word</code> from all the unique lexemes of our documents. We used <code>simple</code> because our content can be in multiple languages. Once we create this materialized view we need to add an index to make a similarity query faster.</p>
+<p>The query above builds a view with one column called <code>word</code> from all the unique lexemes of our documents. We used <code>simple</code> because our content can be in multiple languages. Once we create this materialized view we need to add an index to make the similarity query faster.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">words_idx</span> <span class="k">ON</span> <span class="n">search_words</span> <span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">word</span> <span class="n">gin_trgm_ops</span><span class="p">);</span></code></pre></div>
 
-<p>Luckily unique lexemes used in a search engine is not something that will change rapidly so we possibly won&#39;t have to refresh the materialized view too often via:  </p>
+<p>Luckily unique lexemes used in a search engine is not something that will change rapidly, so probably we won&#39;t have to refresh the materialized view too often via:  </p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">REFRESH</span> <span class="n">MATERIALIZED</span> <span class="k">VIEW</span> <span class="n">unique_lexeme</span><span class="p">;</span></code></pre></div>
 
@@ -632,43 +632,43 @@ That explains why the <code>tsvector</code> results have less elements than the 
 
 <p>This query returns a lexeme which is similar enough (<code>&gt;0.5</code>) to the search input <code>samething</code> ordered by the closest first. The operator <code>&lt;-&gt;</code> returns the &quot;distance&quot; between the arguments, that is one minus the <code>similarity()</code> value. </p>
 
-<p>When you decide to handle mispelling in your search you may want to not look for misspellings on every query. Instead you could query for misspellings only when the search returns no results and use the results of that query to provide some suggestions to your user. It is also possible that your data may contain misspellings if it comes from some source of informal communication such as a social network in which case you may obtain good results by appending the similar lexeme to your <code>tsquery</code>.</p>
+<p>When you decide to handle misspelling in your search you may want to not look for misspellings on every query. Instead, you could query for misspellings only when the search returns no results and use the results of that query to provide some suggestions to your user. It is also possible that your data may contain misspellings if it comes from some source of informal communication such as a social network in which case you may obtain good results by appending the similar lexeme to your <code>tsquery</code>.</p>
 
 <p><a href="http://bartlettpublishing.com/site/bartpub/blog/3/entry/350">&quot;Super Fuzzy Searching on PostgreSQL&quot;</a> is a good reference article about the use of trigrams for using misspellings and search with Postgres. </p>
 
-<p>In my use case the unique lexemes table has never been bigger than 2000 rows but from my understanding if you have more 1M unique lexemes used accross your document then you may be meet performance issues with this technique.</p>
+<p>In my use case the unique lexemes table has never been bigger than 2000 rows but from my understanding if you have more 1M unique lexemes used across your document then you may be meet performance issues with this technique.</p>
 
 <h3>About MySQL and RDS</h3>
 
-<h4>Does it works on Postgres RDS?</h4>
+<h4>Does it work on Postgres RDS?</h4>
 
 <p>All the examples illustrated work on RDS. From what I&#39;m aware the only restrictions on search features imposed by RDS are those that require access to the file system such as custom dictionaries, ispell, synonyms and thesaurus. See <a href="https://forums.aws.amazon.com/message.jspa?messageID=527000#527000">the related issue on the aws forum</a>.</p>
 
 <h4>I&#39;m using MYSQL should I use the builtin full-text search?</h4>
 
-<p>I wouldn&#39;t. Without starting a flame war, MySQL full-text search features are very limited. By default there is no support for stemming nor any language support. I came accross a stemming function which can be installed but MYSQL doesn&#39;t support function based indexes.</p>
+<p>I wouldn&#39;t. Without starting a flame war, MySQL full-text search features are very limited. By default, there is no support for stemming nor any language support. I came accross a stemming function which can be installed, but MYSQL doesn&#39;t support function based indexes.</p>
 
 <p>Then what can you do? Based on what we have discussed above if Postgres fulfills your use case then think about moving to Postgres. This can easily be done via tools like <a href="https://github.com/philipsoutham/py-mysql2pgsql/">py-mysql2pgsql</a>. Or you can investigate more advanced solutions like SOLR and Elasticsearch. </p>
 
 <h3>Conclusion</h3>
 
-<p>We have seen how to build a decent multi-language search engine based on a non-trival document. This article is only an overview but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to blog@lostpropertyhq.com</p>
+<p>We have seen how to build a decent multi-language search engine based on a non-trivial document. This article is only an overview, but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to blog@lostpropertyhq.com</p>
 
-<p>The full-text search feature included in Posgres is awesome and quite fast (enough). It will allow your application to grow without depending on another tool. Is Postgres Search the silver bullet? Probably not if your core business needs revolve around search. </p>
+<p>The full-text search feature included in Postgres is awesome and quite fast (enough). It will allow your application to grow without depending on another tool. Is Postgres Search the silver bullet? Probably not if your core business needs revolve around search. </p>
 
-<p>Some features are missing but in lot of use cases you won&#39;t need them. It goes without saying that it&#39;s critical that you analyze and understand your needs to know which road to take.</p>
+<p>Some features are missing but in a lot of use cases you won&#39;t need them. It goes without saying that it&#39;s critical that you analyze and understand your needs to know which road to take.</p>
 
 <p>Personally I hope to see the full-text search continuing to improve in Postgres and maybe a few of these features being included:</p>
 
 <ul>
-<li>Additional built in language support. eg: Chinese, Japanese...</li>
+<li>Additional built-in language support. eg: Chinese, Japanese...</li>
 <li>Foreign data wrapper around Lucene. Lucene is still the most advanced tool for full-text search and it will have a lot of benefits to see integration with Postgres.</li>
 <li>More boost or scoring feature for the ranking of results would be first-rate. Elasticsearch and SOLR offer advanced solutions already.</li>
-<li>A way to do fuzzy <code>tsquery</code> without having to use trigram would be nice. Elasticsearch offer a simple way to do fuzzy search queries.</li>
+<li>A way to do fuzzy <code>tsquery</code> without having to use trigram would be nice. Elasticsearch offers a simple way to do fuzzy search queries.</li>
 <li>Being able to create and edit dynamically features such as dictionary content, synonyms, thesaurus via SQL this removing the need to add files to the filesystem</li>
 </ul>
 
-<p>Postgres is not as advanced as ElasticSearch and SOLR but these two are dedicated full-text search tools whereas full-text search is only a feature of PostgreSQL and a pretty good one.</p>
+<p>Postgres is not as advanced as ElasticSearch and SOLR, but these two are dedicated full-text search tools whereas full-text search is only a feature of PostgreSQL and a pretty good one.</p>
 
     </section>
 </article>
@@ -677,7 +677,7 @@ That explains why the <code>tsvector</code> results have less elements than the 
         <img class="avatar" src="/assets/images/avatar.png">
         <div>
             <span class="dark">Rachid Belaid</span>
-            <span>Blogging about stuffs</span>
+            <span>Blogging about programming,<br/> computer sciences, databases and others stuffs</span>
         </div>
     </a>
 

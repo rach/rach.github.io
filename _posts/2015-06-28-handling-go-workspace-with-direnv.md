@@ -5,7 +5,7 @@ description: Bringing some sanity into your go project workspaces
 share: true
 ---
 
-When I started to do some [Go](go-lang) I quickly hit my first hurdle: [The Go Workspace](go-workspace). The go tool is designed to work with code maintained in public repositories using the (FQDB)[FQDN] and path as namespace and package name. Eg: `github.com/rach/project-x` where `github.com/rach` is kind of namespace enfore by a directory structure and `project-x` is the package name also enforce by directory structure.
+When I started to do some [Go](go-lang) I quickly hit my first hurdle: [The Go Workspace](go-workspace). The go tool is designed to work with code maintained in public repositories using the [FQDN](FQDN) and path as a kind namespace and package name. Eg: `github.com/rach/project-x` where `github.com/rach` is kind of namespace enfore by a directory structure and `project-x` is the package name also enforce by directory structure.
 
 Coming from Python, I was suprised that there were not a solution as simple as [virtualenv](virtualenv). Go does offer a solution but it requires a bit more code gymnastic. 
 
@@ -150,6 +150,8 @@ If you call the function with an argument then it will consider it being
 the project name and it will ask you for a namespace (eg: github.com/rach), otherwise it will ask you for both: project name (package) and namespace. 
 The create a new worspace with an envrc and helloword ready to build within 
 the correct directory structure.
+
+
 
 {% highlight sh %}
 

@@ -1,10 +1,12 @@
 name: Maybe a -> Blog
-description: Blogging about stuffs
-meta_description: "Blog about xxxxx"
+description: "Blogging about programming,<br/> computer sciences, databases and others stuffs" 
+meta_description: "Blog about progmming, computer science, databases and stuffs"
 
 aboutPage: true
 
 markdown: redcarpet
+redcarpet:
+  extensions: ["strikethrough"]
 highlighter: pygments
 
 paginate: 20
