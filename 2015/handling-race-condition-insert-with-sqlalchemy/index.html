@@ -32,12 +32,12 @@
     </header>
     <section id="post-body">
         <p>In some cases, you may want to have a unique column other than a primary key id. 
-E.g: email, passport number, national id, vat number ... 
-If you have some unique constraints on table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... </p>
+E.g: email, passport number, national id, vat number, ...<br>
+If you have some unique constraints on a table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... </p>
 
-<p>To clarify the context, race condition problem doesn&#39;t apply to unique constraint when you are using a sequence for the value like a primary key with autoincrement set. The reason is because sequences are not transactional. You can easily test it by opening 2 <code>psql</code> and play with sequences. In other words <code>nexval(sequence)</code> will never give you the same value, no matter the transaction and the transaction isolation doesn&#39;t apply to it. </p>
+<p>To clarify the context, race condition problem doesn&#39;t apply to unique constraint when you are using a sequence for the value like a primary key with autoincrement set. The reason is because sequences are non-transactional. You can easily test it by opening 2 <code>psql</code> and play with sequences. In other words, <code>nexval(sequence)</code> will never give you the same value, no matter of the transaction and the transaction isolation doesn&#39;t apply to it.  </p>
 
-<p>To illustrate our problem, we have a model called <code>Link</code>. This model is used to stored an url and we don&#39;t want any duplicate of urls in the table so we made this column unique.  </p>
+<p>To illustrate our problem, we have a model called <code>Link</code>. This model is used to stored an URL and we don&#39;t want any duplicate of URLs in the table so we made this column unique.  </p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declared_attr</span><span class="p">,</span> <span class="n">as_declarative</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span>
@@ -57,13 +57,16 @@ If you have some unique constraints on table then you may hit some race conditio
 <span class="k">class</span> <span class="nc">Link</span><span class="p">(</span><span class="n">Base</span><span class="p">):</span>
     <span class="n">url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
 
-<p>the <code>link</code> table is composed of 2 columns: 
- - an <code>id</code> column which is autoincrement primary key 
- - an <code>url</code> column with an unique constraint.    </p>
+<p>The <code>link</code> table is composed of 2 columns: </p>
 
-<p>We want to be able to insert new link, but if we try to insert an existing url then we want to retrieve the link of object. 
-This operation is commonly referred as <code>get_or_create</code> and it&#39;s a commonly used in Django.<br>
-If we don&#39;t care about race condition then a first version of code may look like this: </p>
+<ul>
+<li>an <code>id</code> column which is an integer primary key with autoincrement </li>
+<li>an <code>url</code> column with an unique constraint.<br></li>
+</ul>
+
+<p>We want to be able to insert new link, but if we try to insert an existing URL then we want to retrieve the existing link of object. 
+This operation is commonly referred as <code>get or create</code> and it&#39;s a commonly used in Django.<br>
+If we don&#39;t care about race condition then a first version of the code may look like this: </p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">DBSession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Link</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Link</span><span class="o">.</span><span class="n">url</span> <span class="o">==</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
@@ -85,12 +88,12 @@ If we don&#39;t care about race condition then a first version of code may look 
     <span class="n">DBSession</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
-<p>This code assume that you have a transaction block created before calling the function <code>get_or_create_link</code>. In the case of a web framework, often a transaction start and end with the request. </p>
+<p>This code assumes that you have a transaction block created before calling the function <code>get_or_create_link</code>. In the case of a web framework, often a transaction start and end with the request. </p>
 
 <p>The code above have a problem because it doesn&#39;t handle the case 
 when a Link object has been inserted in the DB 
-between the time we look into the DB if it exists (step 2) and we create the record (step 4). It will be bad luck but it happens! To write the code solving this problem, we need to understand how the queries behave. 
-Let&#39;s imagine that we have 2 transactions called t1 and t2 and the operations happens as the timeline below.</p>
+between the time we look into the DB if it exists (step 2) and we create the record (step 4). It will be bad luck, but it happens! To write the code solving this problem, we need to understand how the SQL queries behave. 
+Let&#39;s imagine that we have 2 transactions called <code>T1</code> and <code>T2</code> and the operations happens in the following order.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">_</span>               <span class="n">T1</span>               <span class="n">___</span>                <span class="n">T2</span>              <span class="n">_</span>
                                   <span class="o">|</span>
@@ -154,12 +157,10 @@ Let&#39;s imagine that we have 2 transactions called t1 and t2 and the operation
                                   <span class="o">|</span>
                                   <span class="n">V</span></code></pre></div>
 
-<p>The example above try to illustrate the race condition between 2 transactions. 
-Luckily for us, RDBMS are welldone and the potentially conflicting insert is 
-waiting that other transaction COMMIT or ROLLBACK. 
-You can read a bit more about it <a href="http://www.postgresql.org/docs/9.1/static/transaction-iso.html#XACT-READ-COMMITTED">here</a></p>
+<p>The example above tries to illustrate the race condition between 2 transactions. 
+Luckily for us, RDBMS are well done and in our case the potentially conflicting INSERT is waiting for the other transaction to COMMIT or ROLLBACK. </p>
 
-<p>To handle the race condition in this case you want to have a sql behavior as the following:</p>
+<p>To handle the race condition in this case you want the following SQL behavior:</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">_</span>               <span class="n">T1</span>               <span class="n">___</span>                <span class="n">T2</span>              <span class="n">_</span>
                                   <span class="o">|</span>
@@ -218,8 +219,9 @@ You can read a bit more about it <a href="http://www.postgresql.org/docs/9.1/sta
                                   <span class="o">|</span>
                                   <span class="n">V</span></code></pre></div>
 
-<p>In the example able the race condition got handled and the code can continue as expected without having to rollback all the transaction!<br>
-This workflow can be translated into Python and SQLAlchemy</p>
+<p>In the example above, the race condition got handled and the code can continue as expected without having to rollback all the transaction!    </p>
+
+<p>This workflow can be translated into Python and SQLAlchemy:</p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">get_or_create_link</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 
@@ -247,12 +249,12 @@ This workflow can be translated into Python and SQLAlchemy</p>
         <span class="n">link</span> <span class="o">=</span> <span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span> <span class="c"># 7)</span>
     <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
-<p>This code has been written taking in consideration that the model has only one unique constraint. If you understand it then it will be easy for you to your own version to handle your use case.</p>
+<p>This code has been written taking in consideration that the model has only one unique constraint. If you understand it then it will be easy for you to write your own version to handle your specific use case.</p>
 
-<p>Some other people wrote about the similar topic lik is this <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/">post</a> which try to provide a generic version of <code>get_or_create</code>. I personally don&#39;t encourage this approach because of the difficulty in dealing with concurrency of the get/create pattern is not something a generic approach can eliminate; decisions will have to be made in how the SELECT or INSERT is to solve the problem is approached (see Mike Bayer <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/#comment-1202648190">comment</a>).</p>
+<p>Some other people wrote about the similar topic like in this <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/">post</a>. The post tries to provide a generic version of a <code>get_or_create</code> function. I personally don&#39;t encourage this approach because of the difficulty in dealing with concurrency, the get/create pattern is not something a generic approach can eliminate; decisions will have to be made in how the SELECT or INSERT is to solve the problem is approached (see Mike Bayer <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/#comment-1202648190">comment</a>).</p>
 
 <p>It worth to mention that there is the useful SQLAlchemy&#39;s UniqueObject <a href="https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject">recipe</a>, this recipe use the session to keep track of the unique key which helps in some context.<br>
-I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different usecase may require different understanding on how the database works: Locking, transaction isolation, etc </p>
+I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different use case may require different understanding on how the database works: Locking, transaction isolation, etc </p>
 
     </section>
 </article>
