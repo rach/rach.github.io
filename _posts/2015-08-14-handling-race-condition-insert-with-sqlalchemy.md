@@ -5,12 +5,12 @@ description: If you have some unique constraints on a table then you may hit som
 ---
 
 In some cases, you may want to have a unique column other than a primary key id. 
-E.g: email, passport number, national id, vat number ... 
-If you have some unique constraints on table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... 
+E.g: email, passport number, national id, vat number, ...  
+If you have some unique constraints on a table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... 
 
-To clarify the context, race condition problem doesn't apply to unique constraint when you are using a sequence for the value like a primary key with autoincrement set. The reason is because sequences are not transactional. You can easily test it by opening 2 `psql` and play with sequences. In other words `nexval(sequence)` will never give you the same value, no matter the transaction and the transaction isolation doesn't apply to it. 
+To clarify the context, race condition problem doesn't apply to unique constraint when you are using a sequence for the value like a primary key with autoincrement set. The reason is because sequences are non-transactional. You can easily test it by opening 2 `psql` and play with sequences. In other words, `nexval(sequence)` will never give you the same value, no matter of the transaction and the transaction isolation doesn't apply to it.  
 
-To illustrate our problem, we have a model called `Link`. This model is used to stored an url and we don't want any duplicate of urls in the table so we made this column unique.  
+To illustrate our problem, we have a model called `Link`. This model is used to stored an URL and we don't want any duplicate of URLs in the table so we made this column unique.  
 
 {% highlight python %}
 from sqlalchemy.ext.declarative import declared_attr, as_declarative
@@ -32,13 +32,14 @@ class Link(Base):
     url = Column('url', Unicode, index=True, unique=True, nullable=False)
 {% endhighlight %}
 
-the `link` table is composed of 2 columns: 
- - an `id` column which is autoincrement primary key 
- - an `url` column with an unique constraint.    
+The `link` table is composed of 2 columns: 
 
-We want to be able to insert new link, but if we try to insert an existing url then we want to retrieve the link of object. 
-This operation is commonly referred as `get_or_create` and it's a commonly used in Django.   
-If we don't care about race condition then a first version of code may look like this: 
+  - an `id` column which is an integer primary key with autoincrement 
+  - an `url` column with an unique constraint.    
+
+We want to be able to insert new link, but if we try to insert an existing URL then we want to retrieve the existing link of object. 
+This operation is commonly referred as `get or create` and it's a commonly used in Django.   
+If we don't care about race condition then a first version of the code may look like this: 
 
 {% highlight python %}
 
@@ -64,12 +65,12 @@ def get_or_create_link(url):
 
 {% endhighlight %}
 
-This code assume that you have a transaction block created before calling the function `get_or_create_link`. In the case of a web framework, often a transaction start and end with the request. 
+This code assumes that you have a transaction block created before calling the function `get_or_create_link`. In the case of a web framework, often a transaction start and end with the request. 
 
 The code above have a problem because it doesn't handle the case 
 when a Link object has been inserted in the DB 
-between the time we look into the DB if it exists (step 2) and we create the record (step 4). It will be bad luck but it happens! To write the code solving this problem, we need to understand how the queries behave. 
-Let's imagine that we have 2 transactions called t1 and t2 and the operations happens as the timeline below.
+between the time we look into the DB if it exists (step 2) and we create the record (step 4). It will be bad luck, but it happens! To write the code solving this problem, we need to understand how the SQL queries behave. 
+Let's imagine that we have 2 transactions called `T1` and `T2` and the operations happens in the following order.
 
 {% highlight sql %}
 
@@ -136,12 +137,11 @@ ROLLBACK;                         x   => 1 row inserted
                                   V
 {% endhighlight %}
 
-The example above try to illustrate the race condition between 2 transactions. 
-Luckily for us, RDBMS are welldone and the potentially conflicting insert is 
-waiting that other transaction COMMIT or ROLLBACK. 
-You can read a bit more about it [here](http://www.postgresql.org/docs/9.1/static/transaction-iso.html#XACT-READ-COMMITTED)
+The example above tries to illustrate the race condition between 2 transactions. 
+Luckily for us, RDBMS are well done and in our case the potentially conflicting INSERT is waiting for the other transaction to COMMIT or ROLLBACK. 
 
-To handle the race condition in this case you want to have a sql behavior as the following:
+
+To handle the race condition in this case you want the following SQL behavior:
 
 {% highlight sql %}
 
@@ -203,8 +203,9 @@ COMMIT;                           x   Bam! Integrity Error!
                                   V
 {% endhighlight %}
 
-In the example able the race condition got handled and the code can continue as expected without having to rollback all the transaction!    
-This workflow can be translated into Python and SQLAlchemy
+In the example above, the race condition got handled and the code can continue as expected without having to rollback all the transaction!    
+
+This workflow can be translated into Python and SQLAlchemy:
 
 {% highlight python %}
 
@@ -235,9 +236,9 @@ def get_or_create_link(url):
     return link
 {% endhighlight %}
 
-This code has been written taking in consideration that the model has only one unique constraint. If you understand it then it will be easy for you to your own version to handle your use case.
+This code has been written taking in consideration that the model has only one unique constraint. If you understand it then it will be easy for you to write your own version to handle your specific use case.
 
-Some other people wrote about the similar topic lik is this [post](http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/) which try to provide a generic version of `get_or_create`. I personally don't encourage this approach because of the difficulty in dealing with concurrency of the get/create pattern is not something a generic approach can eliminate; decisions will have to be made in how the SELECT or INSERT is to solve the problem is approached (see Mike Bayer [comment](http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/#comment-1202648190)).
+Some other people wrote about the similar topic like in this [post](http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/). The post tries to provide a generic version of a `get_or_create` function. I personally don't encourage this approach because of the difficulty in dealing with concurrency, the get/create pattern is not something a generic approach can eliminate; decisions will have to be made in how the SELECT or INSERT is to solve the problem is approached (see Mike Bayer [comment](http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/#comment-1202648190)).
 
 It worth to mention that there is the useful SQLAlchemy's UniqueObject [recipe](https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject), this recipe use the session to keep track of the unique key which helps in some context.  
-I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different usecase may require different understanding on how the database works: Locking, transaction isolation, etc 
+I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different use case may require different understanding on how the database works: Locking, transaction isolation, etc 

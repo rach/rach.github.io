@@ -11,8 +11,8 @@
         
         
           <description>&lt;p&gt;In some cases, you may want to have a unique column other than a primary key id. 
-E.g: email, passport number, national id, vat number ... 
-If you have some unique constraints on table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... &lt;/p&gt;
+E.g: email, passport number, national id, vat number, ...&lt;br&gt;
+If you have some unique constraints on a table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... &lt;/p&gt;
 </description>
         
         <pubDate>Mon, 17 Aug 2015 00:00:00 +0100</pubDate>
