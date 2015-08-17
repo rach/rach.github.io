@@ -10,12 +10,12 @@
         <title>Prefetch ID with SQLAlchemy and PosgreSQL</title>
         
         
-          <description>&lt;p&gt;For some projects, I wanted to store external URL as short link (like bitly) so an harmful URLs could be block globaly in the system.  To not expose the primary key id, I used &lt;a href=&quot;http://hashids.org/python/&quot;&gt;hashid&lt;/a&gt; which can generates short, unique, non-sequential ids from numbers.&lt;/p&gt;
+          <description>&lt;p&gt;I wanted to store external URL of project as short link (a bit like bitly) so a harmful URL could be block globally in the system. To avoid making the URL being able to be guessed, I used &lt;a href=&quot;http://hashids.org/python/&quot;&gt;hashids&lt;/a&gt; which generates short, unique, non-sequential ids from numbers. With hashids I can easily convert the primary key id into an alternative id which can be exposed.&lt;/p&gt;
 </description>
         
         <pubDate>Tue, 18 Aug 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/prefetch-id-with-sqlalchemy/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/prefetch-id-with-sqlalchemy/</guid>
+        <link>http://rachbelaid.com/prefetch-id-with-sqlalchemy-and-postgres</link>
+        <guid isPermaLink="true">http://rachbelaid.com/prefetch-id-with-sqlalchemy-and-postgres</guid>
       </item>
     
       <item>
@@ -28,8 +28,8 @@ If you have some unique constraints on a table then you may hit some race condit
 </description>
         
         <pubDate>Mon, 17 Aug 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/handling-race-condition-insert-with-sqlalchemy/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/handling-race-condition-insert-with-sqlalchemy/</guid>
+        <link>http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy</link>
+        <guid isPermaLink="true">http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy</guid>
       </item>
     
       <item>
@@ -40,20 +40,20 @@ If you have some unique constraints on a table then you may hit some race condit
 </description>
         
         <pubDate>Mon, 13 Jul 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</guid>
+        <link>http://rachbelaid.com/postgres-full-text-search-is-good-enough</link>
+        <guid isPermaLink="true">http://rachbelaid.com/postgres-full-text-search-is-good-enough</guid>
       </item>
     
       <item>
         <title>Virtualenvwrapper plugins for gems and npms</title>
         
         
-          <description>&lt;p&gt;In a previous &lt;a href=&quot;/2015/keep-your-gems-and-npms-inside-your-virtualenv/&quot;&gt;post&lt;/a&gt;, we&amp;#39;ve seen how to modify your activate script to keep inside a virtualenv the packages from Node and Ruby called gems and npms. I find useful to be able to try gems or npms inside a virtualenv without contaminate your setup.  &lt;/p&gt;
+          <description>&lt;p&gt;In a previous &lt;a href=&quot;/keep-your-gems-and-npms-inside-your-virtualenv&quot;&gt;post&lt;/a&gt;, we&amp;#39;ve seen how to modify your activate script to keep inside a virtualenv the packages from Node and Ruby called gems and npms. I find useful to be able to try gems or npms inside a virtualenv without contaminate your setup.  &lt;/p&gt;
 </description>
         
         <pubDate>Fri, 10 Jul 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/virtualenvwrapper-plugins-for-gems-and-npms/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/virtualenvwrapper-plugins-for-gems-and-npms/</guid>
+        <link>http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</link>
+        <guid isPermaLink="true">http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</guid>
       </item>
     
       <item>
@@ -64,8 +64,8 @@ If you have some unique constraints on a table then you may hit some race condit
 </description>
         
         <pubDate>Thu, 09 Jul 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/keep-your-gems-and-npms-inside-your-virtualenv/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/keep-your-gems-and-npms-inside-your-virtualenv/</guid>
+        <link>http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</link>
+        <guid isPermaLink="true">http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</guid>
       </item>
     
       <item>
@@ -76,8 +76,8 @@ If you have some unique constraints on a table then you may hit some race condit
 </description>
         
         <pubDate>Sun, 28 Jun 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/handling-go-workspace-with-direnv/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/handling-go-workspace-with-direnv/</guid>
+        <link>http://rachbelaid.com/handling-go-workspace-with-direnv</link>
+        <guid isPermaLink="true">http://rachbelaid.com/handling-go-workspace-with-direnv</guid>
       </item>
     
   </channel>

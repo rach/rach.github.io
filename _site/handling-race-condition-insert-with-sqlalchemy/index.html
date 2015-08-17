@@ -35,7 +35,7 @@
 E.g: email, passport number, national id, vat number, ...<br>
 If you have some unique constraints on a table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... </p>
 
-<p>To clarify the context, race condition problem doesn&#39;t apply to unique constraint when you are using a sequence for the value like a primary key with autoincrement set. The reason is because sequences are non-transactional. You can easily test it by opening 2 <code>psql</code> and play with sequences. In other words, <code>nexval(sequence)</code> will never give you the same value, no matter of the transaction and the transaction isolation doesn&#39;t apply to it.  </p>
+<p>To clarify the context, race condition problem doesn&#39;t apply to unique constraint for a column with a sequence for value like a SERIAL (also known as autoincrement ID). The reason is because sequences are non-transactional. You can easily test it by opening 2 <code>psql</code> and play with sequences. In other words, <code>nexval(sequence)</code> will never give you the same value, no matter of the transaction and the transaction isolation doesn&#39;t apply to it. </p>
 
 <p>To illustrate our problem, we have a model called <code>Link</code>. This model is used to stored an URL and we don&#39;t want any duplicate of URLs in the table so we made this column unique.  </p>
 
@@ -180,9 +180,9 @@ Let&#39;s imagine that we have 2 transactions called <code>T1</code> and <code>T
                                   <span class="n">V</span></code></pre></div>
 
 <p>The example above tries to illustrate the race condition between 2 transactions. 
-Luckily for us, RDBMS are well done and in our case the potentially conflicting INSERT is waiting for the other transaction to COMMIT or ROLLBACK. </p>
+You can have differents type of concurrency problem base on type of query UPDATE, DELETE, or SELECT FOR UPDATE but the only way to get a conflict during INSERT is if you have a uniqueness constraint on a table. If two concurrent transactions try to insert rows having the same key value, then the second one will block until the first one finishes. If the first transaction commits, the second one must abort because of the uniqueness constraint; but if the first one aborts the second one can proceed.</p>
 
-<p>To handle the race condition in this case you want the following SQL behavior:</p>
+<p>To handle the race condition in this INSERT case we want the following SQL behavior:</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="n">_</span>               <span class="n">T1</span>               <span class="n">___</span>                <span class="n">T2</span>              <span class="n">_</span>
                                   <span class="o">|</span>
@@ -276,7 +276,7 @@ Luckily for us, RDBMS are well done and in our case the potentially conflicting 
 <p>Some other people wrote about the similar topic like in this <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/">post</a>. The post tries to provide a generic version of a <code>get_or_create</code> function. I personally don&#39;t encourage this approach because of the difficulty in dealing with concurrency, the get/create pattern is not something a generic approach can eliminate; decisions will have to be made in how the SELECT or INSERT is to solve the problem is approached (see Mike Bayer <a href="http://skien.cc/blog/2014/01/15/sqlalchemy-and-race-conditions-implementing/#comment-1202648190">comment</a>).</p>
 
 <p>It worth to mention that there is the useful SQLAlchemy&#39;s UniqueObject <a href="https://bitbucket.org/zzzeek/sqlalchemy/wiki/UsageRecipes/UniqueObject">recipe</a>, this recipe use the session to keep track of the unique key which helps in some context.<br>
-I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different use case may require different understanding on how the database works: Locking, transaction isolation, etc </p>
+I hope this post will help you to understand a bit more race condition even if it only discuss the simple case of INSERT with a unique constraint. With concurrency, different problem may require different understanding on how the database works: Locking, transaction isolation, etc </p>
 
     </section>
 </article>
@@ -301,27 +301,27 @@ I hope this post will help you to understand a bit more race condition even if i
         <h3>Read more</h3>
         
             <li>
-                <a href="/2015/prefetch-id-with-sqlalchemy/">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+                <a href="/prefetch-id-with-sqlalchemy-and-postgres">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
             </li>
         
             <li>
-                <a href="/2015/handling-race-condition-insert-with-sqlalchemy/">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
+                <a href="/handling-race-condition-insert-with-sqlalchemy">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
             </li>
         
             <li>
-                <a href="/2015/postgres-full-text-search-is-good-enough/">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+                <a href="/postgres-full-text-search-is-good-enough">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
             </li>
         
             <li>
-                <a href="/2015/virtualenvwrapper-plugins-for-gems-and-npms/">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+                <a href="/virtualenvwrapper-plugins-for-gems-and-npms">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
             </li>
         
             <li>
-                <a href="/2015/keep-your-gems-and-npms-inside-your-virtualenv/">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+                <a href="/keep-your-gems-and-npms-inside-your-virtualenv">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
             </li>
         
             <li>
-                <a href="/2015/handling-go-workspace-with-direnv/">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+                <a href="/handling-go-workspace-with-direnv">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
             </li>
         
     </ul>
@@ -343,7 +343,7 @@ I hope this post will help you to understand a bit more race condition even if i
     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-XXXXXXXX-X', 'auto');
+    ga('create', 'UA-34383847-2', 'auto');
     ga('send', 'pageview');
   </script>
 </body>

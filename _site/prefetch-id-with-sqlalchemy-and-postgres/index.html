@@ -31,24 +31,11 @@
         <h2 class="headline">August 18, 2015</h2>
     </header>
     <section id="post-body">
-        <p>For some projects, I wanted to store external URL as short link (like bitly) so an harmful URLs could be block globaly in the system.  To not expose the primary key id, I used <a href="http://hashids.org/python/">hashid</a> which can generates short, unique, non-sequential ids from numbers.</p>
-
-<p>PostgreSQL has sequence and when you define a primary key Integer column, 
-SQLAlchemy will automatically create a SERIAL <a href="http://www.postgresql.org/docs/9.4/static/datatype-numeric.html#DATATYPE-SERIAL">type</a>. SERIAL are not true types, but merely a notational convenience for creating unique identifier columns.</p>
-
-<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tablename</span> <span class="p">(</span>
-    <span class="n">colname</span> <span class="nb">SERIAL</span>
-<span class="p">);</span></code></pre></div>
-
-<p>is equivalent to specifying:</p>
-
-<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">SEQUENCE</span> <span class="n">tablename_colname_seq</span><span class="p">;</span>
-<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tablename</span> <span class="p">(</span>
-    <span class="n">colname</span> <span class="nb">integer</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="n">nextval</span><span class="p">(</span><span class="s1">&#39;tablename_colname_seq&#39;</span><span class="p">)</span>
-<span class="p">);</span>
-<span class="k">ALTER</span> <span class="n">SEQUENCE</span> <span class="n">tablename_colname_seq</span> <span class="n">OWNED</span> <span class="k">BY</span> <span class="n">tablename</span><span class="p">.</span><span class="n">colname</span><span class="p">;</span></code></pre></div>
-
-<p>To illustrate our problem, we have a model called <code>Link</code>. This model is used to stored an URL and a corresponding hashid for the short URL.  </p>
+        <p>I wanted to store external URL of project as short link (a bit like bitly) so a harmful URL could be block globally in the system. To avoid making the URL being able to be guessed, I used <a href="http://hashids.org/python/">hashids</a> which generates short, unique, non-sequential ids from numbers. With hashids I can easily convert the primary key id into an alternative id which can be exposed.</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">http://mydomain.com/AW3d -&gt; http://google.com 
+(301 Moved Permanently to http://google.com)  
+</code></pre></div>
+<p>To illustrate our problem, we have a model called <code>Link</code>. This model is used to stored a URL and a corresponding hashid for the short URL.  </p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sqlalchemy.ext.declarative</span> <span class="kn">import</span> <span class="n">declared_attr</span><span class="p">,</span> <span class="n">as_declarative</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">Column</span><span class="p">,</span> <span class="n">Integer</span>
@@ -69,7 +56,23 @@ SQLAlchemy will automatically create a SERIAL <a href="http://www.postgresql.org
     <span class="n">url</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="n">Unicode</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">hashid</span> <span class="o">=</span> <span class="n">Column</span><span class="p">(</span><span class="s">&#39;url&#39;</span><span class="p">,</span> <span class="n">String</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">nullable</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span></code></pre></div>
 
-<p>Even if technically the transactions protect us from accident insert by the application. I want to avoid having nullable column as it can compromise the integrity of our db with only exception if it&#39;s necessary or having null column makes sens.  In our case, having a link object without hashid doesn&#39;t make sense. If we were to allow NULL for the hashid column then we could have a function as the following to create Link object.</p>
+<p>Even if a transaction block protect us from an accidental INSERT by the application error halfway. I want to avoid having nullable column if I can to preserve the integrity of our db. In some cases, having a NULL value can make sens but we don&#39;t want a link object without hashid.</p>
+
+<p>To be able to create the hashid before insert, we need to know what will be the primary id. Luckily, PostgreSQL has sequences and when you define a primary key Integer column, SQLAlchemy will automatically use the SERIAL <a href="http://www.postgresql.org/docs/9.4/static/datatype-numeric.html#DATATYPE-SERIAL">type</a>. SERIAL are not true types, but a notational convenience for creating unique identifier columns. Behind the scene, Postgres create a not null Integer column with a default value equal to the sequence next value. </p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tablename</span> <span class="p">(</span>
+    <span class="n">colname</span> <span class="nb">SERIAL</span>
+<span class="p">);</span></code></pre></div>
+
+<p>is equivalent to specifying:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">SEQUENCE</span> <span class="n">tablename_colname_seq</span><span class="p">;</span>
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">tablename</span> <span class="p">(</span>
+    <span class="n">colname</span> <span class="nb">integer</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="k">DEFAULT</span> <span class="n">nextval</span><span class="p">(</span><span class="s1">&#39;tablename_colname_seq&#39;</span><span class="p">)</span>
+<span class="p">);</span>
+<span class="k">ALTER</span> <span class="n">SEQUENCE</span> <span class="n">tablename_colname_seq</span> <span class="n">OWNED</span> <span class="k">BY</span> <span class="n">tablename</span><span class="p">.</span><span class="n">colname</span><span class="p">;</span></code></pre></div>
+
+<p>Let see first, a solution if we were to allow NULL for the hashid column. A function to create a Link object could look like this:</p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">hashids</span> <span class="kn">import</span> <span class="n">Hashids</span>
 
@@ -85,9 +88,9 @@ SQLAlchemy will automatically create a SERIAL <a href="http://www.postgresql.org
     <span class="n">DBSession</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
-<p>In the case, we decided not to allow NULL in the hashid column then we want to know what will be the id before inserting the Link object in the DB. Luckily, we have sequence allow us to do that.
-The SERIAL type is automatically creating a sequence of the format <code>tablename_columm_seq</code>.
-Using that we can rewrite the function to create a Link object.</p>
+<p>In our case, we decided not to allow NULL in the hashid column so the code above would give us a violation error of the not-null constraint. </p>
+
+<p>The SERIAL type created a sequence of the format <code>tablename_columm_seq</code> and using the sequence we can prefetch the id. The rewritten function to create a Link object using sequence could look like this:</p>
 
 <div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">hashids</span> <span class="kn">import</span> <span class="n">Hashids</span>
 <span class="kn">from</span> <span class="nn">sqlalchemy.schema</span> <span class="kn">import</span> <span class="n">Sequence</span>
@@ -106,7 +109,7 @@ Using that we can rewrite the function to create a Link object.</p>
     <span class="n">DBSession</span><span class="o">.</span><span class="n">commit</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
-<p>Because the sequence are non-transactionnal, then there is no problem with prefetching the id from it. </p>
+<p>Because the sequences are non-transactional, then there is no problem with prefetching the id from it. I&#39;m not aware of any problems that could happen. </p>
 
 <p>I hope this post may help if you hit a similar use case, I can imagine some situation when I wanted to know the ID before inserting my record.</p>
 
@@ -133,27 +136,27 @@ Using that we can rewrite the function to create a Link object.</p>
         <h3>Read more</h3>
         
             <li>
-                <a href="/2015/prefetch-id-with-sqlalchemy/">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+                <a href="/prefetch-id-with-sqlalchemy-and-postgres">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
             </li>
         
             <li>
-                <a href="/2015/handling-race-condition-insert-with-sqlalchemy/">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
+                <a href="/handling-race-condition-insert-with-sqlalchemy">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
             </li>
         
             <li>
-                <a href="/2015/postgres-full-text-search-is-good-enough/">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+                <a href="/postgres-full-text-search-is-good-enough">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
             </li>
         
             <li>
-                <a href="/2015/virtualenvwrapper-plugins-for-gems-and-npms/">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+                <a href="/virtualenvwrapper-plugins-for-gems-and-npms">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
             </li>
         
             <li>
-                <a href="/2015/keep-your-gems-and-npms-inside-your-virtualenv/">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+                <a href="/keep-your-gems-and-npms-inside-your-virtualenv">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
             </li>
         
             <li>
-                <a href="/2015/handling-go-workspace-with-direnv/">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+                <a href="/handling-go-workspace-with-direnv">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
             </li>
         
     </ul>
@@ -175,7 +178,7 @@ Using that we can rewrite the function to create a Link object.</p>
     m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
 
-    ga('create', 'UA-XXXXXXXX-X', 'auto');
+    ga('create', 'UA-34383847-2', 'auto');
     ga('send', 'pageview');
   </script>
 </body>

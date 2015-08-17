@@ -12,7 +12,7 @@ highlighter: pygments
 paginate: 20
 baseurl: /
 domain_name: 'http://rachbelaid.com'
-google_analytics: 'UA-XXXXXXXX-X'
+google_analytics: 'UA-34383847-2'
 
 
 # Details for the RSS feed generator
@@ -20,7 +20,7 @@ url:            'http://rachbelaid.com'
 author:         'Rachid Belaid'
 authorTwitter:  'rachbelaid'
 
-permalink:       /:year/:title/
+permalink:       /:title
 
 defaults:
     -
