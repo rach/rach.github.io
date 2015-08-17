@@ -7,6 +7,18 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Prefetch ID with SQLAlchemy and PosgreSQL</title>
+        
+        
+          <description>&lt;p&gt;For some projects, I wanted to store external URL as short link (like bitly) so an harmful URLs could be block globaly in the system.  To not expose the primary key id, I used &lt;a href=&quot;http://hashids.org/python/&quot;&gt;hashid&lt;/a&gt; which can generates short, unique, non-sequential ids from numbers.&lt;/p&gt;
+</description>
+        
+        <pubDate>Tue, 18 Aug 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/prefetch-id-with-sqlalchemy/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/prefetch-id-with-sqlalchemy/</guid>
+      </item>
+    
+      <item>
         <title>Handling concurrent INSERT with SQLAlchemy</title>
         
         

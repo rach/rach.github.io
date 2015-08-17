@@ -68,25 +68,47 @@ If you have some unique constraints on a table then you may hit some race condit
 This operation is commonly referred as <code>get or create</code> and it&#39;s a commonly used in Django.<br>
 If we don&#39;t care about race condition then a first version of the code may look like this: </p>
 
-<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">DBSession</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">Link</span><span class="p">)</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">Link</span><span class="o">.</span><span class="n">url</span> <span class="o">==</span> <span class="n">url</span><span class="p">)</span><span class="o">.</span><span class="n">first</span><span class="p">()</span>
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">link</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">link</span>
 
-<span class="k">def</span> <span class="nf">get_or_create_link</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
+        <span class="n">nextid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">Sequence</span><span class="p">(</span><span class="s">&quot;link_id_seq&quot;</span><span class="p">))</span>
+        <span class="n">hashid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortid</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">nextid</span><span class="p">)</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">nextid</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">hashid</span><span class="o">=</span><span class="n">hashid</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">begin_nested</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">IntegrityError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
-    <span class="c"># 1. Looking for an existing Link object for these url value</span>
-    <span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>  
+        <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
-    <span class="k">if</span> <span class="n">link</span><span class="p">:</span>
-        <span class="c"># 2. A Link object exist and we return it </span>
-        <span class="k">return</span> <span class="n">link</span> 
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">link</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">link</span>
 
-    <span class="c"># 3. A Link object doesn&#39;t exist so we create an instance</span>
-    <span class="n">link</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">)</span>
-    <span class="n">DBSession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">link</span><span class="p">)</span> 
+        <span class="n">nextid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">Sequence</span><span class="p">(</span><span class="s">&quot;link_id_seq&quot;</span><span class="p">))</span>
+        <span class="n">hashid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortid</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">nextid</span><span class="p">)</span>
+        <span class="n">link</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span>
+            <span class="nb">id</span><span class="o">=</span><span class="n">nextid</span><span class="p">,</span>
+            <span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span>
+            <span class="n">hashid</span><span class="o">=</span><span class="n">hashid</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">begin_nested</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">link</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">IntegrityError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dbsession</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+            <span class="n">link</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_link_by_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
 
-    <span class="c"># 4. We insert the link object in the table inside this transaction  </span>
-    <span class="n">DBSession</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">link</span></code></pre></div>
+        <span class="k">return</span> <span class="n">link</span></code></pre></div>
 
 <p>This code assumes that you have a transaction block created before calling the function <code>get_or_create_link</code>. In the case of a web framework, often a transaction start and end with the request. </p>
 
@@ -277,6 +299,10 @@ I hope this post will help you to understand a bit more race condition even if i
 
     <ul id="post-list" class="archive readmore">
         <h3>Read more</h3>
+        
+            <li>
+                <a href="/2015/prefetch-id-with-sqlalchemy/">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+            </li>
         
             <li>
                 <a href="/2015/handling-race-condition-insert-with-sqlalchemy/">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
