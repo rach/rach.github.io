@@ -1,0 +1,2 @@
+
+  -  for a code design reason, prefere to avoid. I try to create a database service layer with the goal of centralizing and isolate the DB queries. The service layer only expose an interface to the rest of the code. The Three-tier architecture has some advantage: it helps to avoid unexpected query, having one place to check all db interactions, being able to switch the underlying technology without changing the rest of the code if the contract stay the same.    

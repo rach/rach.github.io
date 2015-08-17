@@ -7,6 +7,20 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Handling concurrent INSERT with SQLAlchemy</title>
+        
+        
+          <description>&lt;p&gt;In some cases, you may want to have a unique column other than a primary key id. 
+E.g: email, passport number, national id, vat number ... 
+If you have some unique constraints on table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... &lt;/p&gt;
+</description>
+        
+        <pubDate>Mon, 17 Aug 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/2015/handling-race-condition-insert-with-sqlalchemy/</link>
+        <guid isPermaLink="true">http://rachbelaid.com/2015/handling-race-condition-insert-with-sqlalchemy/</guid>
+      </item>
+    
+      <item>
         <title>Postgres full-text search is Good Enough!</title>
         
         
@@ -16,20 +30,6 @@
         <pubDate>Mon, 13 Jul 2015 00:00:00 +0100</pubDate>
         <link>http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</link>
         <guid isPermaLink="true">http://rachbelaid.com/2015/postgres-full-text-search-is-good-enough/</guid>
-      </item>
-    
-      <item>
-        <title>Git Subtree to create branches from subfolder</title>
-        
-        
-          <description>&lt;p&gt;This post is about using &lt;code&gt;git subtree merge&lt;/code&gt; to have a branch that is a subset of another branch. 
-Github will be a use case and act as a way to illustrate this feature, there are probably other
-ways to accomplish the same result.&lt;/p&gt;
-</description>
-        
-        <pubDate>Sat, 11 Jul 2015 00:00:00 +0100</pubDate>
-        <link>http://rachbelaid.com/2015/git-subtree-to-create-a-branch-from-subfolder/</link>
-        <guid isPermaLink="true">http://rachbelaid.com/2015/git-subtree-to-create-a-branch-from-subfolder/</guid>
       </item>
     
       <item>
