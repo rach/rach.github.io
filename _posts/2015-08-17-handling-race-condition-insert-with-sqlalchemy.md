@@ -41,53 +41,28 @@ We want to be able to insert new link, but if we try to insert an existing URL t
 This operation is commonly referred as `get or create` and it's a commonly used in Django.   
 If we don't care about race condition then a first version of the code may look like this: 
 
-{% highlight python %}
-
-        link = self.get_link_by_url(url)
-        if link:
-            return link
-
-        nextid = self.dbsession.execute(Sequence("link_id_seq"))
-        hashid = self.shortid.encode(nextid)
-        link = Link(
-            id=nextid,
-            url=url,
-            hashid=hashid
-        )
-        self.dbsession.begin_nested()
-        try:
-            self.dbsession.add(link)
-            self.dbsession.commit()
-        except IntegrityError, e:
-            self.dbsession.rollback()
-            link = self.get_link_by_url(url)
-
-        return link
-
-{% endhighlight %}
 
 {% highlight python %}
 
-        link = self.get_link_by_url(url)
-        if link:
-            return link
+def get_link_by_url(url):
+    return DBSession.query(Link).filter(Link.url == url).first()
 
-        nextid = self.dbsession.execute(Sequence("link_id_seq"))
-        hashid = self.shortid.encode(nextid)
-        link = Link(
-            id=nextid,
-            url=url,
-            hashid=hashid
-        )
-        self.dbsession.begin_nested()
-        try:
-            self.dbsession.add(link)
-            self.dbsession.commit()
-        except IntegrityError, e:
-            self.dbsession.rollback()
-            link = self.get_link_by_url(url)
 
+def get_or_create_link(url):
+    # 1. Looking for an existing Link object for these url value
+    link = self.get_link_by_url(url)
+
+    if link:
+        # 2. A Link object exist and we return it
         return link
+
+    # 3. A Link object doesn't exist so we create an instance
+    link = Link(url=url)
+    DBSession.add(link)
+
+    # 4. We insert the link object in the table inside this transaction
+    DBSession.flush()
+    return link 
 
 {% endhighlight %}
 
