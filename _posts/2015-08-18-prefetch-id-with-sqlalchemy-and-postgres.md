@@ -2,6 +2,7 @@
 title:  "Prefetch ID with SQLAlchemy and PosgreSQL"
 date:   2015-08-18
 description: If you need to know the value of the row id before INSERT, this post shows you how.    
+share: true
 ---
 
 I wanted to store external URL of project as short link (a bit like bitly) so a harmful URL could be block globally in the system. To avoid making the URL being able to be guessed, I used [hashids](http://hashids.org/python/) which generates short, unique, non-sequential ids from numbers. With hashids I can easily convert the primary key id into an alternative id which can be exposed.

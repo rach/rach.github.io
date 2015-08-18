@@ -2,6 +2,7 @@
 title:  "Handling concurrent INSERT with SQLAlchemy"
 date:   2015-08-17
 description: If you have some unique constraints on a table then you may hit some race condition problem in some cases.    
+share: true
 ---
 
 In some cases, you may want to have a unique column other than a primary key id. 
