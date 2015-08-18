@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Maybe a -> Blog - Capturing screenshots of website with Python</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href='/'> <span class="arrow">←</span> Home </a>
+    
+
+    
+</nav>
+
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Capturing screenshots of website with Python</h1>
+        <h2 class="headline">August 19, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>If you google how to do a screenshot of a website then you will probably end 
+with an answer depending on PyQT and WebKit. Sadly, PyQt is not a python package
+that you can install easily via <code>pip</code> and you will few others dependencies
+to be able to generate a screenshot of a site.</p>
+
+<p>This post describes an easier solution depending only on Selenium and PhantomJS. 
+Selenium can easily be installed by <code>pip</code> and phantomJS via your package manager or <code>npm</code>. On OSX, it&#39;s just a matter of doing:</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh">brew install phantomjs <span class="c"># or npm -g phantomjs </span>
+pip install selenium</code></pre></div>
+
+<p>At the opposite of installing PyQT, it should be without problems.
+Once you have Selenium and PhantomJS installed then it becomes simple 
+to write the small python code required to generate the screenshot of a website. </p>
+
+<div class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">selenium</span> <span class="kn">import</span> <span class="n">webdriver</span>
+<span class="n">depot</span> <span class="o">=</span> <span class="n">DepotManager</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+<span class="n">driver</span> <span class="o">=</span> <span class="n">webdriver</span><span class="o">.</span><span class="n">PhantomJS</span><span class="p">()</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">set_window_size</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span> <span class="c"># set the window size that you need </span>
+<span class="n">driver</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;https://github.com&#39;</span><span class="p">)</span>
+<span class="n">driver</span><span class="o">.</span><span class="n">save_screenshot</span><span class="p">(</span><span class="s">&#39;github.png&#39;</span><span class="p">)</span></code></pre></div>
+
+<p>The code above is all you need to generate a screenshot of a website. Webdriver offers others API like <code>get_screenshot_as_png()</code> which return a binary and can be useful to create an image in memory if you want to manipulate before saving it. </p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/rachbelaid">
+        <img class="avatar" src="/assets/images/avatar.png">
+        <div>
+            <span class="dark">Rachid Belaid</span>
+            <span>Blogging about programming,<br/> computer sciences, databases and others stuffs</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        
+
+    </section>
+</footer>
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/capturing-screenshots-of-website-with-python">Capturing screenshots of website with Python<aside class="dates">Aug 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/prefetch-id-with-sqlalchemy-and-postgres">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-race-condition-insert-with-sqlalchemy">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
+            </li>
+        
+            <li>
+                <a href="/postgres-full-text-search-is-good-enough">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+            </li>
+        
+            <li>
+                <a href="/virtualenvwrapper-plugins-for-gems-and-npms">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+            </li>
+        
+            <li>
+                <a href="/keep-your-gems-and-npms-inside-your-virtualenv">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-go-workspace-with-direnv">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-34383847-2', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+
