@@ -7,6 +7,21 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Capturing screenshots of website with Python</title>
+        
+        
+          <description>&lt;p&gt;If you google how to do a screenshot of a website then you will probably end 
+with an answer depending on PyQT and WebKit. Sadly, PyQt is not a python package
+that you can install easily via &lt;code&gt;pip&lt;/code&gt; and you will few others dependencies
+to be able to generate a screenshot of a site.&lt;/p&gt;
+</description>
+        
+        <pubDate>Wed, 19 Aug 2015 00:00:00 +0100</pubDate>
+        <link>http://rachbelaid.com/capturing-screenshots-of-website-with-python</link>
+        <guid isPermaLink="true">http://rachbelaid.com/capturing-screenshots-of-website-with-python</guid>
+      </item>
+    
+      <item>
         <title>Prefetch ID with SQLAlchemy and PosgreSQL</title>
         
         
