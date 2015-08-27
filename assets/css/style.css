@@ -187,7 +187,7 @@ a,
 }
 
 ul 	{ margin:0; padding:0; }
-li	{ list-style-type:circle; list-style-position:inside; }
+li	{ list-style-type:circle; list-style-position:outside; }
 
 /* Line Height */
 #post-body, p { line-height:1.7; }
@@ -316,7 +316,7 @@ pre	{
 
 }
 
-p > code {
+li > code, p > code {
     padding: 0px 5px 2px;
     border: 1px solid #DDD;
     border-radius: 3px;

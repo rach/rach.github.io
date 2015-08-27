@@ -7,6 +7,18 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Recursive Regular Expression</title>
+        
+        
+          <description>&lt;p&gt;I was discussing with a colleague about a simple problem that his company was asking during an interview: &lt;em&gt;&amp;quot;Given a string composed from opened and closed parentheses, detect if all the parentheses are closed&amp;quot;&lt;/em&gt;&lt;/p&gt;
+</description>
+        
+        <pubDate>Thu, 20 Aug 2015 00:00:00 -0700</pubDate>
+        <link>http://rachbelaid.com/recursive-regular-experession</link>
+        <guid isPermaLink="true">http://rachbelaid.com/recursive-regular-experession</guid>
+      </item>
+    
+      <item>
         <title>Capturing screenshots of website with Python</title>
         
         
@@ -16,7 +28,7 @@ that you can install easily via &lt;code&gt;pip&lt;/code&gt; and you will few ot
 to be able to generate a screenshot of a site.&lt;/p&gt;
 </description>
         
-        <pubDate>Wed, 19 Aug 2015 00:00:00 +0100</pubDate>
+        <pubDate>Wed, 19 Aug 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/capturing-screenshots-of-website-with-python</link>
         <guid isPermaLink="true">http://rachbelaid.com/capturing-screenshots-of-website-with-python</guid>
       </item>
@@ -28,7 +40,7 @@ to be able to generate a screenshot of a site.&lt;/p&gt;
           <description>&lt;p&gt;I wanted to store external URL of project as short link (a bit like bitly) so a harmful URL could be block globally in the system. To avoid making the URL being able to be guessed, I used &lt;a href=&quot;http://hashids.org/python/&quot;&gt;hashids&lt;/a&gt; which generates short, unique, non-sequential ids from numbers. With hashids I can easily convert the primary key id into an alternative id which can be exposed.&lt;/p&gt;
 </description>
         
-        <pubDate>Tue, 18 Aug 2015 00:00:00 +0100</pubDate>
+        <pubDate>Tue, 18 Aug 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/prefetch-id-with-sqlalchemy-and-postgres</link>
         <guid isPermaLink="true">http://rachbelaid.com/prefetch-id-with-sqlalchemy-and-postgres</guid>
       </item>
@@ -42,7 +54,7 @@ E.g: email, passport number, national id, vat number, ...&lt;br&gt;
 If you have some unique constraints on a table then you may hit some race condition problem in some edge cases. In this post, we will only cover this case base on Postgres, but I assume that the behavior is similar with other RDBMS: Mysql, Oracle, ... &lt;/p&gt;
 </description>
         
-        <pubDate>Mon, 17 Aug 2015 00:00:00 +0100</pubDate>
+        <pubDate>Mon, 17 Aug 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy</link>
         <guid isPermaLink="true">http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy</guid>
       </item>
@@ -54,7 +66,7 @@ If you have some unique constraints on a table then you may hit some race condit
           <description>&lt;p&gt;When you have to build a web application, you are often asked to add search. The magnifying glass is something that we now add to wireframes without even knowing what we are going to search.&lt;/p&gt;
 </description>
         
-        <pubDate>Mon, 13 Jul 2015 00:00:00 +0100</pubDate>
+        <pubDate>Mon, 13 Jul 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/postgres-full-text-search-is-good-enough</link>
         <guid isPermaLink="true">http://rachbelaid.com/postgres-full-text-search-is-good-enough</guid>
       </item>
@@ -66,7 +78,7 @@ If you have some unique constraints on a table then you may hit some race condit
           <description>&lt;p&gt;In a previous &lt;a href=&quot;/keep-your-gems-and-npms-inside-your-virtualenv&quot;&gt;post&lt;/a&gt;, we&amp;#39;ve seen how to modify your activate script to keep inside a virtualenv the packages from Node and Ruby called gems and npms. I find useful to be able to try gems or npms inside a virtualenv without contaminate your setup.  &lt;/p&gt;
 </description>
         
-        <pubDate>Fri, 10 Jul 2015 00:00:00 +0100</pubDate>
+        <pubDate>Fri, 10 Jul 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</link>
         <guid isPermaLink="true">http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</guid>
       </item>
@@ -78,7 +90,7 @@ If you have some unique constraints on a table then you may hit some race condit
           <description>&lt;p&gt;Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  &lt;/p&gt;
 </description>
         
-        <pubDate>Thu, 09 Jul 2015 00:00:00 +0100</pubDate>
+        <pubDate>Thu, 09 Jul 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</link>
         <guid isPermaLink="true">http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</guid>
       </item>
@@ -90,7 +102,7 @@ If you have some unique constraints on a table then you may hit some race condit
           <description>&lt;p&gt;When I started to do some &lt;a href=&quot;go-lang&quot;&gt;Go&lt;/a&gt; I quickly hit my first hurdle: &lt;a href=&quot;go-workspace&quot;&gt;The Go Workspace&lt;/a&gt;. The go tool is designed to work with code maintained in public repositories using the &lt;a href=&quot;FQDN&quot;&gt;FQDN&lt;/a&gt; and path as a kind of namespace and package name. Eg: &lt;code&gt;github.com/rach/project-x&lt;/code&gt;, where &lt;code&gt;github.com/rach&lt;/code&gt; is a kind of namespace enforce by a directory structure and &lt;code&gt;project-x&lt;/code&gt; is the package name also enforce by directory structure.&lt;/p&gt;
 </description>
         
-        <pubDate>Sun, 28 Jun 2015 00:00:00 +0100</pubDate>
+        <pubDate>Sun, 28 Jun 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/handling-go-workspace-with-direnv</link>
         <guid isPermaLink="true">http://rachbelaid.com/handling-go-workspace-with-direnv</guid>
       </item>
