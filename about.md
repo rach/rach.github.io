@@ -4,6 +4,12 @@ permalink: about/
 profile: true
 ---
 
+Quality:
+
+Detail oriented
+Never missed a deadline 
+
+
 Available for hire!
 blablabla
 
