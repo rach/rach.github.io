@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Maybe a -> Blog - Embedding static assets in a Go project</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href='/'> <span class="arrow">←</span> Home </a>
+    
+
+    
+</nav>
+
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Embedding static assets in a Go project</h1>
+        <h2 class="headline">September 7, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>I wanted to build a small self-contained web application in Go, 
+at the opposite of an usual webapp where the assets will be serve separatly 
+via a CDN or HTTP server like nginx. 
+But if performance doesn&#39;t matter or it&#39;s aimed for a small traffic then having a 
+self-contained application makes it easier to deploy and to distribute as it&#39;s simply a binary to run.  </p>
+
+<p>There is few packages which allow to embed assets into a Go application:</p>
+
+<ul>
+<li><a href="https://github.com/GeertJohan/go.rice">Rice</a></li>
+<li><a href="https://github.com/rakyll/statik">Statik</a></li>
+<li><a href="https://github.com/jteeuwen/go-bindata">Bindata</a></li>
+</ul>
+
+<p>I&#39;m not going to go into the details of each library but I prefered the approach of bindata, simpler to get started, and actively maintained. Also the step to embed is very explicit in the code.</p>
+
+<p>First, you will need to have a Go workspace setup.
+If you are unfamilliar with Go then you can refere to the <a href="https://golang.org/doc/code.html#Workspaces">documentation</a> or my previous <a href="/handling-go-workspace-with-direnv">post</a> on the topic.</p>
+
+<p>Once you got a Go workspace and project setup then let&#39;s create an <code>index.html</code> inside a <code>frontend/</code> directory within your project. A simple <em>&#39;Hello World&#39;</em> will do: </p>
+
+<div class="highlight"><pre><code class="language-html" data-lang="html"><span class="c">&lt;!-- frontend/index.html --&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    Hello, World!
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span></code></pre></div>
+
+<p>Now that we have a project setup and a static asset to test, let&#39;s install <a href="https://github.com/jteeuwen/go-bindata">bindata</a> via:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">go get -u github.com/jteeuwen/go-bindata/...
+</code></pre></div>
+<p>We are good to start the webapp backend code. Create <code>main.go</code> file and copy the following code:</p>
+
+<div class="highlight"><pre><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+    <span class="s">&quot;bytes&quot;</span>
+    <span class="s">&quot;io&quot;</span>
+  <span class="s">&quot;net/http&quot;</span>
+<span class="p">)</span>
+
+<span class="c1">//go:generate go-bindata -prefix &quot;frontend/&quot; -pkg main -o bindata.go frontend/...</span>
+
+<span class="kd">func</span> <span class="nx">static_handler</span><span class="p">(</span><span class="nx">rw</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">req</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">path</span> <span class="kt">string</span> <span class="p">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">URL</span><span class="p">.</span><span class="nx">Path</span>
+  <span class="k">if</span> <span class="nx">path</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="p">{</span>
+    <span class="nx">path</span> <span class="p">=</span> <span class="s">&quot;index.html&quot;</span>
+  <span class="p">}</span>
+  <span class="k">if</span> <span class="nx">bs</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">Asset</span><span class="p">(</span><span class="nx">path</span><span class="p">);</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+    <span class="nx">rw</span><span class="p">.</span><span class="nx">WriteHeader</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">StatusNotFound</span><span class="p">)</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">reader</span> <span class="p">=</span> <span class="nx">bytes</span><span class="p">.</span><span class="nx">NewBuffer</span><span class="p">(</span><span class="nx">bs</span><span class="p">)</span>
+    <span class="nx">io</span><span class="p">.</span><span class="nx">Copy</span><span class="p">(</span><span class="nx">rw</span><span class="p">,</span> <span class="nx">reader</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">http</span><span class="p">.</span><span class="nx">Handle</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">StripPrefix</span><span class="p">(</span><span class="s">&quot;/&quot;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nx">HandlerFunc</span><span class="p">(</span><span class="nx">static_handler</span><span class="p">)))</span>
+    <span class="nx">http</span><span class="p">.</span><span class="nx">ListenAndServe</span><span class="p">(</span><span class="s">&quot;:3000&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+<span class="p">}</span></code></pre></div>
+
+<p>The important line in this code is: </p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">//go:generate go-bindata -prefix &quot;frontend/&quot; -pkg main -o bindata.go frontend/...
+</code></pre></div>
+<p>the line above allow us to run the <code>go-bindata</code> command line when we are calling <code>go generate</code>.
+From Go 1.4, it&#39;s allowed to run custom commands during a <a href="http://golang.org/cmd/go/#hdr-Generate_Go_files_by_processing_source">generate</a> step. It&#39;s just a matter of adding <code>//go:generate command argument...</code> inside your go file.   </p>
+
+<p>The command line <code>go-bindata</code> have multiple options so check the <a href="https://github.com/jteeuwen/go-bindata#usage">documentation</a> on how to use it. In our case, we are telling bindata few things:</p>
+
+<ul>
+<li> <code>-prefix &quot;frontend/&quot;</code> to define a part of a path name to be stripped off<br></li>
+<li> <code>-pkg main</code> to define the package name used in the generated code </li>
+<li> <code>-o bindata.go</code> to define the name of the generated file</li>
+</ul>
+
+<p>Once the <code>go generate</code> command has run, you should see a file called <code>bindata.go</code> being generated. Your project&#39;s structure should look like this:</p>
+<div class="highlight"><pre><code class="language-text" data-lang="text">.
+│ 
+├── bindata.go (auto-generated file)
+├── frontend
+│   └── index.html
+└── main.go
+</code></pre></div>
+<p>The logic to serve the static asset is in the <code>static_handler</code> function, 
+which receive a request and check if the path matchs an asset. The check is done using the function <code>Asset</code> automatically exported by <code>bindata.go</code>. If the asset doesn&#39;t exist then we return a 404 otherwise we return the content of the asset.</p>
+
+<p>The rest of the code is to create the web application and associate our <code>static_handler</code> with a pattern <code>/</code> to match all entering requests. If you&#39;ve got problems understanding this code then check the <code>http</code> package <a href="http://golang.org/pkg/net/http/">documentation</a>.</p>
+
+<p>As quick reminder about how Go handle packages, all identifiers will be automatically exported to other packages of the same name if the first letter of the identifier name starts with an uppercase letter. </p>
+
+<p>Base on this rule, <code>bindata.go</code> file expose an <code>Asset</code> function to the <code>main</code> package. This loads and returns the asset for a given name. 
+It returns an error if the asset could not be found or could not be loaded.</p>
+
+<p>This post doens&#39;t go into advanced details but I may write other posts as I&#39;m progressing in my application.</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/rachbelaid">
+        <img class="avatar" src="/assets/images/avatar.png">
+        <div>
+            <span class="dark">Rachid Belaid</span>
+            <span>Blogging about programming,<br/> computer sciences, databases and others stuffs</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        
+
+    </section>
+</footer>
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/embedding-assets-in-go-project">Embedding static assets in a Go project<aside class="dates">Sep 07</aside></a>
+            </li>
+        
+            <li>
+                <a href="/recursive-regular-experession">Recursive Regular Expression<aside class="dates">Aug 20</aside></a>
+            </li>
+        
+            <li>
+                <a href="/capturing-screenshots-of-website-with-python">Capturing screenshots of website with Python<aside class="dates">Aug 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/prefetch-id-with-sqlalchemy-and-postgres">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-race-condition-insert-with-sqlalchemy">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
+            </li>
+        
+            <li>
+                <a href="/postgres-full-text-search-is-good-enough">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+            </li>
+        
+            <li>
+                <a href="/virtualenvwrapper-plugins-for-gems-and-npms">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+            </li>
+        
+            <li>
+                <a href="/keep-your-gems-and-npms-inside-your-virtualenv">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-go-workspace-with-direnv">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-34383847-2', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+
