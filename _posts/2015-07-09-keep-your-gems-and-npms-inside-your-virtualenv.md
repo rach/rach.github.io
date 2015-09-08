@@ -7,11 +7,11 @@ share: true
 
 Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  
 
-If you are using Python then you are probably used to work with [virtualenv](virtualenv). When working with virtualenv then the last thing that you want is installing dependencies globaly and you want to contain them per project.
+If you are using Python then you are probably used to work with [virtualenv][virtualenv]. When working with virtualenv then the last thing that you want is installing dependencies globaly and you want to contain them per project.
 
 Taming your gems and npms to force them of existing only in your virtualen is very straightforward as `gem` and `npm` support environment variable to tell them where to find things.
 
-To do so, copy the lines below at the end of the ‘activate’ script of the virtualenv. If you are using [virtualenvwrapper](virtualenvwrapper) then you copy it inside the ‘postactivate’ script.
+To do so, copy the lines below at the end of the ‘activate’ script of the virtualenv. If you are using [virtualenvwrapper][virtualenvwrapper] then you copy it inside the ‘postactivate’ script.
 
 {% highlight sh %}
     
@@ -33,13 +33,13 @@ npm -g install <package>
 
 And all yours gems/npms will be installed in your vitualenv and will be deleted with it.
 
-If you are using [direnv](direnv) then you can copy the script into your `.envrc`.
+If you are using [direnv][direnv] then you can copy the script into your `.envrc`.
 
 This is an updated version of an older post from my previous blog but the infos is still actual as I'm still using a similar technique when jungling between different projects. 
 
 This technique as the trade off of not doing any tidying after itself when deactivating the virtualenv and keeping the environment variables. 
 
-I'm using virtualenwrapper so I developed 2 small plugins: [virtualenv.npm](virtualenv-npm), [virtualenv.npm](virtualenv-npm)); which allows to do the same but also handle the cleaning when you deactivate the virtualenv.
+I'm using virtualenwrapper so I developed 2 small plugins: [virtualenv.npm][virtualenv-npm], [virtualenv.npm][virtualenv-npm]; which allows to do the same but also handle the cleaning when you deactivate the virtualenv.
 
 [virtualenv]:   https://pypi.python.org/pypi/virtualenv 
 [virtualenvwrapper]:   https://pypi.python.org/pypi/virtualenvwrapper 

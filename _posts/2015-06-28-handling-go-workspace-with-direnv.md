@@ -5,11 +5,11 @@ description: Bringing some sanity into your go project workspaces
 share: true
 ---
 
-When I started to do some [Go](go-lang) I quickly hit my first hurdle: [The Go Workspace](go-workspace). The go tool is designed to work with code maintained in public repositories using the [FQDN](FQDN) and path as a kind of namespace and package name. Eg: `github.com/rach/project-x`, where `github.com/rach` is a kind of namespace enforce by a directory structure and `project-x` is the package name also enforce by directory structure.
+When I started to do some [Go][go-lang] I quickly hit my first hurdle: [The Go Workspace][go-workspace]. The go tool is designed to work with code maintained in public repositories using the [FQDN][FQDN] and path as a kind of namespace and package name. Eg: `github.com/rach/project-x`, where `github.com/rach` is a kind of namespace enforce by a directory structure and `project-x` is the package name also enforce by directory structure.
 
-Coming from Python, I was surprised that there weren't a solution as simple as [virtualenv](virtualenv). Go does offer a way but it requires a bit more of code gymnastic. 
+Coming from Python, I was surprised that there weren't a solution as simple as [virtualenv][virtualenv]. Go does offer a way but it requires a bit more of code gymnastic. 
 
-In this post, I'm going to describe how I made my life easier to work with Go with a bit of shell script and using [direnv](direnv) to automate workspace switching. I didn't know much about go when I wrote this post so feel free to shed some light on any of my mistakes.   
+In this post, I'm going to describe how I made my life easier to work with Go with a bit of shell script and using [direnv][direnv] to automate workspace switching. I didn't know much about go when I wrote this post so feel free to shed some light on any of my mistakes.   
 
 
 ##Workspaces
