@@ -11,8 +11,8 @@
         
         
           <description>&lt;p&gt;I wanted to build a small self-contained web application in Go, 
-at the opposite of an usual webapp where the assets will be serve separatly 
-via a CDN or HTTP server like nginx. 
+at the opposite of a usual webapp where the assets will be served separately 
+via a CDN or HTTP server like Nginx. 
 But if performance doesn&amp;#39;t matter or it&amp;#39;s aimed for a small traffic then having a 
 self-contained application makes it easier to deploy and to distribute as it&amp;#39;s simply a binary to run.  &lt;/p&gt;
 </description>
