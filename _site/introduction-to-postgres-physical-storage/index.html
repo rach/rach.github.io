@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Introduction PostgreSQL physical storage</title>
+  <link rel="shortcut icon" href="/assets/images/favicon.ico">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
+  <link rel="stylesheet" href="/assets/css/highlight.css">
+</head>
+<body>
+
+  <nav class="main-nav">
+    
+        <a href='/'> <span class="arrow">←</span> Home </a>
+    
+
+    
+</nav>
+
+
+  
+
+  <section id="wrapper" class="">
+    <article class="post">
+    <header>
+        <h1>Introduction PostgreSQL physical storage</h1>
+        <h2 class="headline">November 9, 2015</h2>
+    </header>
+    <section id="post-body">
+        <p>I initially wrote this post for myself, I wanted to understand enough about the
+underlying physical storage to be able to grasp other concepts which can affect
+your database. This post is probably more aimed to people with similar interests,
+I will try to keep it accurate but I aim to make simpler and overlook some details.</p>
+
+<p>Should you know about how Postgres handle the physical storage? Maybe not,
+but it will definitively useful if you need to investigate some problems.</p>
+
+<p>PostgreSQL has a <a href="http://www.postgresql.org/docs/9.5/static/storage.html">chapter</a> on the subject but personally I had to dive
+in extra resources to get my head around it. I found difficult to navigate through multiple parts of the documentation and external resources, so this is my attempt to gather the essential in a single post. In this post, I didn&#39;t bother rewriting everything so in some place I reused paragraphs from the official documentation.</p>
+
+<p>At the time of this article, the current version of Postgres is 9.5, it&#39;s possible that the information in this post to be voided in a future release.</p>
+
+<p>To illustrate the examples of this post, we will be assuming that we have a database called <code>foo</code> which contain a table called <code>bar</code>.</p>
+
+<h2>A bit of terminology</h2>
+
+<p>Once you dive into the documentation about storage then you start to hit
+some less common terms like relations, tuple, heap, block, page...
+Let me try to demystify what they mean:</p>
+
+<ul>
+<li>a <code>tuple</code> or an <code>item</code> is a synonym for a row</li>
+<li>a <code>relation</code> is a synonym for a table</li>
+<li>a <code>filenode</code> is an id which represent a reference to a table or an index.</li>
+<li>a <code>block</code> and <code>page</code> are equals and they represent a 8kb segment information the file storing the table. </li>
+<li>a <code>heap</code> refer to <code>heap file</code>. Heap files are lists of unordered records of variable size. Although sharing a similar name, heap files are different from <a href="https://en.wikipedia.org/wiki/Heap_(data_structure)">heap data structure</a>. </li>
+<li><code>CTID</code> represent the physical location of the row version within its table. <code>CTID</code> is also a special column available for every tables but not visible unless specifically mentioned. It consists of a page number and the index of an item identifier.</li>
+<li><code>OID</code> stands for Object Identifier. </li>
+<li><code>database cluster</code>, we call a database cluster the storage area on disk. A database cluster is a collection of databases that is managed by a single instance of a running database server.</li>
+<li><code>VACCUM</code>, PostgreSQL databases require periodic maintenance known as vacuuming</li>
+</ul>
+
+<p>Don&#39;t get surprised if you hit this terms in the rest of this post. In few places, I simplified the content when it was possible.</p>
+
+<h2>Where is my database stored</h2>
+
+<p>The data files used by a database cluster are stored together within the cluster&#39;s data directory, commonly referred to as PGDATA (after the name of the environment variable that can be used to define it). PGDATA can have different location base on your OS or installation.</p>
+
+<p>For each database in the cluster, there is a subdirectory within <code>PGDATA/base</code>, named after the database&#39;s OID in <code>pg_database</code>. This subdirectory is the default location for the database&#39;s files. </p>
+
+<p>You can run the following query if you want to list the OID for each database in your cluster.</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="n">oid</span><span class="p">,</span> <span class="n">datname</span> <span class="k">from</span> <span class="n">pg_database</span><span class="p">;</span>
+
+  <span class="n">oid</span>  <span class="o">|</span>   <span class="n">datname</span>
+<span class="c1">-------+-------------</span>
+     <span class="mi">1</span> <span class="o">|</span> <span class="n">template1</span>
+ <span class="mi">12398</span> <span class="o">|</span> <span class="n">template0</span>
+ <span class="mi">12403</span> <span class="o">|</span> <span class="n">postgres</span>
+ <span class="mi">17447</span> <span class="o">|</span> <span class="n">foo</span></code></pre></div>
+
+<p>If you are you looking for the OID of a specific database then you add a <code>WHERE</code> clause to the query:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="n">oid</span><span class="p">,</span> <span class="n">datname</span> <span class="k">from</span> <span class="n">pg_database</span> <span class="k">WHERE</span> <span class="n">datname</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span><span class="p">;</span></code></pre></div>
+
+<p>The other way to find the OID of a database is using the command line  <code>oid2name</code>. It&#39;s a utility program to examine the file structure used by PostgreSQL for more information on how to use it check the <a href="oid2name_doc">documentation</a></p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nv">$&gt;</span> oid2name
+All databases:
+    Oid  Database Name  Tablespace
+----------------------------------
+  <span class="m">17447</span>            foo  pg_default
+  <span class="m">12398</span>      template0  pg_default
+      <span class="m">1</span>      template1  pg_default</code></pre></div>
+
+<p>The OID&#39;s above may be completely different in your system, but now we know that all the files concerning the  database <code>foo</code> are stored in <code>PGDATA/base/17447</code>. If you ask yourself in which database, tables as <code>pg_database</code> are stored then they are not in <code>PGDATA/base</code> but in <code>PGDATA/global</code>.</p>
+
+<p>Now, we know where to find the database in our file system so let try to figure out where to find our table.</p>
+
+<h3>Where tables are stored</h3>
+
+<p>Each table is stored in a separate file. For ordinary relations, these files are named after the table or index&#39;s filenode number, which can be found in the column <code>relfilenode</code> of the table <code>pg_class.</code>. <code>pg_class</code> is system table which exist in the <code>pg_catalog</code> schema.</p>
+
+<p>When a table exceeds 1 GB, it is divided into gigabyte-sized segments. The first segment&#39;s file name is the same as the filenode; subsequent segments are named filenode.1, filenode.2, etc. This arrangement avoids problems on platforms that have file size limitations.</p>
+
+<p>A table&#39;s filenode often matches its OID, this is not necessarily the case. To find table filenode path, you can run the following query when you connected to your database:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="n">pg_relation_filepath</span><span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">);</span>
+<span class="n">pg_relation_filepath</span>
+<span class="c1">----------------------</span>
+ <span class="n">base</span><span class="o">/</span><span class="mi">17447</span><span class="o">/</span><span class="mi">27741</span></code></pre></div>
+
+<p>If you don&#39;t want the path but only the filenode then you can use the function <code>pg_relation_filenode</code> with the same argument. As for the database OID, you can find the table filenode by using <code>oid2name</code></p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh">&gt; oid2name -d foo -t bar
+
+From database <span class="s2">&quot;foo&quot;</span>:
+  Filenode  Table Name
+----------------------
+     <span class="m">27741</span>         bar</code></pre></div>
+
+<h3>The System tables</h3>
+
+<p>In the previous section we talk a bit about system tables, it&#39;s interesting to know that there is a system catalog schema which contains tables that you may want to query to find extra information.</p>
+
+<p>When you create a database, in addition to public and user-created schemas, each database contains a <code>pg_catalog</code> schema, which contains the system tables and all the built-in data types, functions, and operators. <code>pg_catalog</code> is always effectively part of the search path, so you don&#39;t need to use the prefix when you query the system tables.</p>
+
+<p>Once connected to your database via <code>psql</code>, you can list the list the systems tables via:</p>
+
+<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="se">\d</span>t pg_catalog.*</code></pre></div>
+
+<h2>How the data are stored inside a table file</h2>
+
+<p>Every table stored as an array of pages of a fixed size (usually 8Kb).
+In a table, all the pages are logically equivalent, so a particular item (row) can be stored in any page.</p>
+
+<p>The structure used to store the table is a heap file. Heap files are lists of unordered records of variable size. The heap file is structured as a collection of pages (or block), each containing a collection of items. The term item refers to a row that is stored on a page.</p>
+
+<p>A page structure looks like the following:</p>
+
+<p><img src="/assets/posts/heap_file_page.png" alt="Page structure"></p>
+
+<p>It contains some headers which we are not going to cover, but they provide info about checksum, start of free space, end of free space, ...
+Items after the headers is an array identifier composed of (offset, length) pairs pointing to the actual items.</p>
+
+<p>Because an item identifier is never moved until it is freed, its index can be used on a long-term basis to reference an item, even when the item itself is moved around on the page to compact free space. A Pointer to an item is called CTID (ItemPointer), created by PostgreSQL, it consists of a page number and the index of an item identifier.</p>
+
+<p>The items themselves are stored in space allocated backwards from the end of unallocated space.
+To summarize, inside a page the pointers to the row are stored at the starts and the tuples (rows) are stored at the end of the page.</p>
+
+<p>You can access the CTID of a row about simply selection the columns:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">ctid</span><span class="p">,</span> <span class="o">*</span> <span class="k">from</span> <span class="n">bar</span><span class="p">;</span></code></pre></div>
+
+<h2>What are the limitations</h2>
+
+<p>According to [About PostgreSQL][pg_about], the max number of column is between 250 and 1600 depending on column types. The column types affect it because in PostgreSQL rows may be at most 8kb (one page) wide, they cannot span pages.</p>
+
+<p>It doesn&#39;t mean that value of a column is limited to 8kb. Having a big value in columns is possible depending on the type because postgreSQL has a mechanism called TOAST which can handle that. But there&#39;s still limit to how many columns you can fit in that depends on how wide the data types used are. Even pointer to TOAST attribute still requires some bytes.</p>
+
+<h2>The Oversized-Attribute Storage Technique</h2>
+
+<p>In the previous section, we&#39;ve said that some column can go beyond the size of a page if their types are TOAST-able. Let&#39;s do an overview of TOAST and it means. First, TOAST stands for <code>The Oversized-Attribute Storage Technique</code>, probably the best acronym in the history of Computer Science.</p>
+
+<p>PostgreSQL uses a fixed page size (commonly 8 kB), and does not allow tuples to span multiple pages. Therefore, it is not possible to store very large field values directly. When a row is attempted to be stored that exceeds this size, TOAST basically breaks up the data of large columns into smaller &quot;pieces&quot; and stores them into a TOAST table. Each table you create has its own associated (unique) TOAST table, which may or may not ever end up being used, depending on the size of rows you insert. All of this is transparent to the user and enabled by default. The mechanism is accomplished by splitting up the large column entry into 2KB bytes and storing them as chunks in the TOAST tables. It then stores the length and a pointer to the TOAST entry back where the column is normally stored. Because of how the pointer system is implemented, most TOAST&#39;able column types are limited to a max size of 1GB.</p>
+
+<p>TOAST has a number of advantages compared to a more straightforward approach such as allowing row values to span pages. The big values of TOASTed attributes will only be pulled out (if selected at all) at the time the result set is sent to the client. The table itself will much smaller and more of its rows fit in the shared buffer cache than would be the case without any out-of-line storage (TOAST). It&#39;s also more likely that the sort sets get smaller which imply having sorts being done entirely in memory.</p>
+
+<p>In our example, the table <code>bar</code> with the OID of <code>27741</code> will have the TOAST table <code>pg_toast_27741</code>. There is more to be said about TOAST like that it also provide compression, but I keep it to the essential. TOAST make it transparent to the user but keep in mind that TOAST-able column have a limit 1GB. You can store a lot of data in 1GB and it can be useful to denormalize data in an ARRAY type or store documents in JSONB type. </p>
+
+<h2>Free Space map</h2>
+
+<p>Each table has a [free space map][free<em>space</em>map], which stores information about free space available in the relation. The free space map is stored in a file named with the filenode number plus the suffix _fsm. </p>
+
+<p>The values stored in the free space map are not exact. They&#39;re rounded to a precision of 1/256th of page size (32 bytes with default 8kb), and they&#39;re not kept fully up-to-date as tuples are inserted and updated. Some operations update the freespace map as deleting all the rows, but the VACCUM will update the freespace map for the future row being able to know which page they can fit.</p>
+
+<p>The freespace map is updated by running VACUUM because an UPDATE or DELETE of a row does not immediately remove the old version of the row. This approach is necessary to gain the benefits of multiversion concurrency control (MVCC): the row version must not be deleted while it is still potentially visible to other transactions. But eventually, an outdated or deleted row version is no longer of interest to any transaction. The space it occupies must then be reclaimed for reuse by new rows, to avoid unbounded growth of disk space requirements.</p>
+
+<p>The standard form of VACUUM removes dead row versions in tables and marks the space available for future reuse. However, it will not return the space to the operating system, except in the special case where one or more pages at the end of a table become entirely free and an exclusive table lock can be obtained. It doesn&#39;t mean that the free space inside a page is fragmented, VACUUM rewrites the entire block, efficiently packing the remaining rows and leaving a single contiguous block of free space in a page.</p>
+
+<p>In contrast, VACUUM FULL actively compacts tables by writing a complete new version of the table file with no dead space. This minimizes the size of the table, but can take a long time. It also requires extra disk space for the new copy of the table, until the operation completes. The goal of routine VACUUM is to avoid needing VACUUM FULL. The idea is not to keep tables at their minimum size, but to maintain steady-state usage of disk space: each table occupies space equivalent to its minimum size plus however much space gets used up between vacuumings.</p>
+
+<p>In Past, when VACUUM ran, it had to look at every tuple in a table, because there was no information about which pages may not have been updated since the last VACUUM. PostgreSQL introduced the visibility map, VACUUM is now be able to perform partial scans of table data, skipping pages which are marked as fully visible. Partial scans mean fewer I/O operations for VACUUM.</p>
+
+<p>You can query the frees pace available by pages in your table via following query:</p>
+
+<div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="n">EXTENSION</span> <span class="n">pg_freespace</span><span class="p">;</span>
+<span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">pg_freespace</span><span class="p">(</span><span class="s1">&#39;bar&#39;</span><span class="p">::</span><span class="n">regclass</span><span class="p">);</span></code></pre></div>
+
+<h2>Visibility map</h2>
+
+<p>Each table has also a Visibility Map (VM) to keep track of which pages contain only tuples that are known to be visible to all active transactions. In others words, to track which pages are known to have no dead row. The Visibility map is stored alongside the table file in a separate file, named after the filenode number of the relation, plus a <code>_vm</code> suffix. For example, the filenode of a relation <code>bar</code> is 27741, the VM is stored in a file called 12345_vm, in the same directory as the main relation file.</p>
+
+<p>We&#39;ve seen in the previous section, the dead rows are due to the MVCC mechanism.</p>
+
+<p>The visibility map simply stores one bit per heap page. A set bit means that all tuples on the page are known to be visible to all transactions. This means that the page does not contain any tuples that need to be vacuumed. The map is conservative in the sense that we make sure that whenever a bit is set, we know the condition is true, but if a bit is not set, it might or might not be true. Visibility map bits are only set by vacuum but are cleared by any data-modifying operations on a page.</p>
+
+<h2>What about Indexes</h2>
+
+<p>Indexes are also stored as files too and in the same directory as the tables. Indexes are an other story, I didn&#39;t cover them as it will make this post much longer than it&#39;s already. Even if indexes also have pages, they follow a different structures as they are b-tree&#39;s (by default).</p>
+
+<h2>Conclusion</h2>
+
+<p>I hope this post gave you enough information to have a better understand about how PostgreSQL may store your data. It has been useful for me to dive in the subject, it makes some other concepts or talks more easy to grasp but mainly fewer behaviors have to be accepted for granted. Much more could be said about the PostgreSQL storage and I hope that somebody more knowledgeable than me will undertake to make it understandable to beginners.</p>
+
+<h3>References:</h3>
+
+<ul>
+<li><a href="http://www.postgresql.org/docs/9.5/static/storage.html">Chapter 63. Database Physical Storage</a></li>
+<li><a href="http://momjian.us/main/writings/pgsql/internalpics.pdf">PostgreSQL Internals Through Pictures</a></li>
+<li><a href="http://sydney.edu.au/engineering/it/%7Einfo3404/lectures/02adv_RowFormats.pdf">Physical Row Storage Formats (University of Sydney)</a></li>
+<li><a href="http://www.postgresql.org/docs/9.0/static/disk-usage.html">28.1. Determining Disk Usage</a></li>
+<li><a href="https://wiki.postgresql.org/images/8/81/FSM_and_Visibility_Map.pdf">Free Space Map and Visibility Map</a></li>
+</ul>
+
+<p>[pg_about]</p>
+
+    </section>
+</article>
+<footer id="post-meta" class="clearfix">
+    <a href="http://twitter.com/rachbelaid">
+        <img class="avatar" src="/assets/images/avatar.png">
+        <div>
+            <span class="dark">Rachid Belaid</span>
+            <span>Blogging about programming,<br/> computer sciences, databases and others stuffs</span>
+        </div>
+    </a>
+
+    <section id="sharing">
+        
+
+    </section>
+</footer>
+
+<!-- Archive post list -->
+
+    <ul id="post-list" class="archive readmore">
+        <h3>Read more</h3>
+        
+            <li>
+                <a href="/introduction-to-postgres-physical-storage">Introduction PostgreSQL physical storage<aside class="dates">Nov 09</aside></a>
+            </li>
+        
+            <li>
+                <a href="/embedding-assets-in-go-project">Embedding static assets in a Go project<aside class="dates">Sep 07</aside></a>
+            </li>
+        
+            <li>
+                <a href="/recursive-regular-experession">Recursive Regular Expression<aside class="dates">Aug 20</aside></a>
+            </li>
+        
+            <li>
+                <a href="/capturing-screenshots-of-website-with-python">Capturing screenshots of website with Python<aside class="dates">Aug 19</aside></a>
+            </li>
+        
+            <li>
+                <a href="/prefetch-id-with-sqlalchemy-and-postgres">Prefetch ID with SQLAlchemy and PosgreSQL<aside class="dates">Aug 18</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-race-condition-insert-with-sqlalchemy">Handling concurrent INSERT with SQLAlchemy<aside class="dates">Aug 17</aside></a>
+            </li>
+        
+            <li>
+                <a href="/postgres-full-text-search-is-good-enough">Postgres full-text search is Good Enough!<aside class="dates">Jul 13</aside></a>
+            </li>
+        
+            <li>
+                <a href="/virtualenvwrapper-plugins-for-gems-and-npms">Virtualenvwrapper plugins for gems and npms<aside class="dates">Jul 10</aside></a>
+            </li>
+        
+            <li>
+                <a href="/keep-your-gems-and-npms-inside-your-virtualenv">Keep your gems and npms inside your virtualenv<aside class="dates">Jul 09</aside></a>
+            </li>
+        
+            <li>
+                <a href="/handling-go-workspace-with-direnv">Handling Go workspace with direnv<aside class="dates">Jun 28</aside></a>
+            </li>
+        
+    </ul>
+
+
+
+
+
+  </section>
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="/assets/js/main.js"></script>
+  <script src="/assets/js/highlight.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+
+  <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-34383847-2', 'auto');
+    ga('send', 'pageview');
+  </script>
+</body>
+</html>
+
+
+

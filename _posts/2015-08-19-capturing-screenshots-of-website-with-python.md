@@ -2,6 +2,7 @@
 title:  "Capturing screenshots of website with Python"
 date:   2015-08-19
 description: There are solutions depending on PyQt, this post describes an easier one depending of PhantomJS.      
+share: true
 ---
 
 If you google how to do a screenshot of a website then you will probably end 

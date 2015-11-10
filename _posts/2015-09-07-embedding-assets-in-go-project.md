@@ -2,6 +2,7 @@
 title:  "Embedding static assets in a Go project"
 date:   2015-09-07
 description: If you want to ship a Go webapp as a binary, this post shows how to embed static assets (images, html, ...)     
+share: true
 ---
 
 I wanted to build a small self-contained web application in Go, 

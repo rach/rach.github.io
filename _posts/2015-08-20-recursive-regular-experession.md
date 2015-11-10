@@ -2,6 +2,7 @@
 title:  "Recursive Regular Expression"
 date:   2015-08-20
 description: It's not really well known that regex support recursive pattern, this post introduces this feature.      
+share: true
 ---
 
 I was discussing with a colleague about a simple problem that his company was asking during an interview: _"Given a string composed from opened and closed parentheses, detect if all the parentheses are closed"_
