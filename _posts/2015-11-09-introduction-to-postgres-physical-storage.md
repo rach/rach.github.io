@@ -224,4 +224,4 @@ I hope this post gave you enough information to have a better understand about h
 [pg_storage]: http://www.postgresql.org/docs/9.5/static/storage.html
 [heap_data_structure]: https://en.wikipedia.org/wiki/Heap_(data_structure)
 [pg_internal_slides]: http://momjian.us/main/writings/pgsql/internalpics.pdf
-[pg_about]
+[pg_about]: http://www.postgresql.org/about/
