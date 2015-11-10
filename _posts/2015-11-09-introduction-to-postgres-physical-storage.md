@@ -85,7 +85,7 @@ The OID's above may be completely different in your system, but now we know that
 Now, we know where to find the database in our file system so let try to figure out where to find our table.
 
 
-###Where tables are stored
+##Where tables are stored
 
 Each table is stored in a separate file. For ordinary relations, these files are named after the table or index's filenode number, which can be found in the column `relfilenode` of the table `pg_class.`. `pg_class` is system table which exist in the `pg_catalog` schema.
 
@@ -115,7 +115,7 @@ From database "foo":
 
 {% endhighlight %}
 
-###The System tables
+##The System tables
 
 In the previous section we talk a bit about system tables, it's interesting to know that there is a system catalog schema which contains tables that you may want to query to find extra information.
 
