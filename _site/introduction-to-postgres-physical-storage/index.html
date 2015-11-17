@@ -34,13 +34,13 @@
         <p>I initially wrote this post for myself, I wanted to understand enough about the
 underlying physical storage to be able to grasp other concepts which can affect
 your database. This post is probably more aimed to people with similar interests,
-I will try to keep it accurate but I aim to make simpler and overlook some details.</p>
+I will try to keep it accurate but the aim is to make it simpler to understand so I may overlook some details.</p>
 
 <p>Should you know about how Postgres handle the physical storage? Maybe not,
-but it will definitively useful if you need to investigate some problems.</p>
+but knowing how it works can be useful if you need to investigate some problems.</p>
 
 <p>PostgreSQL has a <a href="http://www.postgresql.org/docs/9.5/static/storage.html">chapter</a> on the subject but personally I had to dive
-in extra resources to get my head around it. I found difficult to navigate through multiple parts of the documentation and external resources, so this is my attempt to gather the essential in a single post. In this post, I didn&#39;t bother rewriting everything so in some place I reused paragraphs from the official documentation.</p>
+in extra resources to get my head around it. I found difficult to navigate through multiple parts of the documentation and external resources, so this is my attempt to gather the essential in a single post. In this post, I didn&#39;t bother to rewrite everything so in some place I reused paragraphs from the official documentation.</p>
 
 <p>At the time of this article, the current version of Postgres is 9.5, it&#39;s possible that the information in this post to be voided in a future release.</p>
 
@@ -83,7 +83,7 @@ Let me try to demystify what they mean:</p>
  <span class="mi">12403</span> <span class="o">|</span> <span class="n">postgres</span>
  <span class="mi">17447</span> <span class="o">|</span> <span class="n">foo</span></code></pre></div>
 
-<p>If you are you looking for the OID of a specific database then you add a <code>WHERE</code> clause to the query:</p>
+<p>If you are looking for the OID of a specific database then you add a <code>WHERE</code> clause to the query:</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">select</span> <span class="n">oid</span><span class="p">,</span> <span class="n">datname</span> <span class="k">from</span> <span class="n">pg_database</span> <span class="k">WHERE</span> <span class="n">datname</span> <span class="o">=</span> <span class="s1">&#39;foo&#39;</span><span class="p">;</span></code></pre></div>
 
@@ -103,7 +103,7 @@ All databases:
 
 <h2>Where tables are stored</h2>
 
-<p>Each table is stored in a separate file. For ordinary relations, these files are named after the table or index&#39;s filenode number, which can be found in the column <code>relfilenode</code> of the table <code>pg_class.</code>. <code>pg_class</code> is system table which exist in the <code>pg_catalog</code> schema.</p>
+<p>Each table is stored in a separate file. For ordinary relations, these files are named after the table or index&#39;s filenode number, which can be found in the column <code>relfilenode</code> of the table <code>pg_class</code>. <code>pg_class</code> is system table which exist in the <code>pg_catalog</code> schema.</p>
 
 <p>When a table exceeds 1 GB, it is divided into gigabyte-sized segments. The first segment&#39;s file name is the same as the filenode; subsequent segments are named filenode.1, filenode.2, etc. This arrangement avoids problems on platforms that have file size limitations.</p>
 
@@ -127,13 +127,13 @@ From database <span class="s2">&quot;foo&quot;</span>:
 
 <p>In the previous section we talk a bit about system tables, it&#39;s interesting to know that there is a system catalog schema which contains tables that you may want to query to find extra information.</p>
 
-<p>When you create a database, in addition to public and user-created schemas, each database contains a <code>pg_catalog</code> schema, which contains the system tables and all the built-in data types, functions, and operators. <code>pg_catalog</code> is always effectively part of the search path, so you don&#39;t need to use the prefix when you query the system tables.</p>
+<p>When you create a database, in addition to <code>public</code> and user-created schemas, each database contains a <code>pg_catalog</code> schema, which contains the system tables and all the built-in data types, functions, and operators. <code>pg_catalog</code> is always effectively part of the search path, so you don&#39;t need to use the prefix when you query the system tables.</p>
 
 <p>Once connected to your database via <code>psql</code>, you can list the list the systems tables via:</p>
 
 <div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="se">\d</span>t pg_catalog.*</code></pre></div>
 
-<h2>How the data are stored inside a table file</h2>
+<h2>How the rows are stored</h2>
 
 <p>Every table stored as an array of pages of a fixed size (usually 8Kb).
 In a table, all the pages are logically equivalent, so a particular item (row) can be stored in any page.</p>
@@ -152,7 +152,7 @@ Items after the headers is an array identifier composed of (offset, length) pair
 <p>The items themselves are stored in space allocated backwards from the end of unallocated space.
 To summarize, inside a page the pointers to the row are stored at the starts and the tuples (rows) are stored at the end of the page.</p>
 
-<p>You can access the CTID of a row about simply selection the columns:</p>
+<p>You can access the CTID of a row by adding <code>ctid</code> in the selected columns:</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">SELECT</span> <span class="n">ctid</span><span class="p">,</span> <span class="o">*</span> <span class="k">from</span> <span class="n">bar</span><span class="p">;</span></code></pre></div>
 
@@ -160,11 +160,11 @@ To summarize, inside a page the pointers to the row are stored at the starts and
 
 <p>According to <a href="http://www.postgresql.org/about/">About PostgreSQL</a>, the max number of column is between 250 and 1600 depending on column types. The column types affect it because in PostgreSQL rows may be at most 8kb (one page) wide, they cannot span pages.</p>
 
-<p>It doesn&#39;t mean that value of a column is limited to 8kb. Having a big value in columns is possible depending on the type because postgreSQL has a mechanism called TOAST which can handle that. But there&#39;s still limit to how many columns you can fit in that depends on how wide the data types used are. Even pointer to TOAST attribute still requires some bytes.</p>
+<p>It doesn&#39;t mean that value of a column is limited to 8kb. Having a big value in columns is possible depending on the type because postgreSQL has a mechanism called TOAST which can handle that. There&#39;s still limit to how many columns you can fit in, that depends on how wide the data types used are. Even pointer to TOAST attribute still requires some bytes.</p>
 
 <h2>The Oversized-Attribute Storage Technique</h2>
 
-<p>In the previous section, we&#39;ve said that some column can go beyond the size of a page if their types are TOAST-able. Let&#39;s do an overview of TOAST and it means. First, TOAST stands for <code>The Oversized-Attribute Storage Technique</code>, probably the best acronym in the history of Computer Science.</p>
+<p>In the previous section, we&#39;ve said that some column can go beyond the size of a page if their types are TOAST-able. Let&#39;s do an overview of TOAST. First, TOAST stands for <code>The Oversized-Attribute Storage Technique</code>, probably the best acronym in the history of Computer Science.</p>
 
 <p>PostgreSQL uses a fixed page size (commonly 8 kB), and does not allow tuples to span multiple pages. Therefore, it is not possible to store very large field values directly. When a row is attempted to be stored that exceeds this size, TOAST basically breaks up the data of large columns into smaller &quot;pieces&quot; and stores them into a TOAST table. Each table you create has its own associated (unique) TOAST table, which may or may not ever end up being used, depending on the size of rows you insert. All of this is transparent to the user and enabled by default. The mechanism is accomplished by splitting up the large column entry into 2KB bytes and storing them as chunks in the TOAST tables. It then stores the length and a pointer to the TOAST entry back where the column is normally stored. Because of how the pointer system is implemented, most TOAST&#39;able column types are limited to a max size of 1GB.</p>
 
@@ -182,7 +182,7 @@ To summarize, inside a page the pointers to the row are stored at the starts and
 
 <p>The standard form of VACUUM removes dead row versions in tables and marks the space available for future reuse. However, it will not return the space to the operating system, except in the special case where one or more pages at the end of a table become entirely free and an exclusive table lock can be obtained. It doesn&#39;t mean that the free space inside a page is fragmented, VACUUM rewrites the entire block, efficiently packing the remaining rows and leaving a single contiguous block of free space in a page.</p>
 
-<p>In contrast, VACUUM FULL actively compacts tables by writing a complete new version of the table file with no dead space. This minimizes the size of the table, but can take a long time. It also requires extra disk space for the new copy of the table, until the operation completes. The goal of routine VACUUM is to avoid needing VACUUM FULL. The idea is not to keep tables at their minimum size, but to maintain steady-state usage of disk space: each table occupies space equivalent to its minimum size plus however much space gets used up between vacuumings.</p>
+<p>In contrast, VACUUM FULL actively compacts tables by writing a complete new version of the table file with no dead space. This minimizes the size of the table, but can take a long time. It also requires extra disk space for the new copy of the table, until the operation completes. The goal of routine VACUUM is to avoid needing VACUUM FULL. The idea is not to keep tables at their minimum size, but to maintain steady-state usage of disk space: each table occupies space equivalent to its minimum size plus how much space gets used up between vacuumings.</p>
 
 <p>In Past, when VACUUM ran, it had to look at every tuple in a table, because there was no information about which pages may not have been updated since the last VACUUM. PostgreSQL introduced the visibility map, VACUUM is now be able to perform partial scans of table data, skipping pages which are marked as fully visible. Partial scans mean fewer I/O operations for VACUUM.</p>
 
@@ -201,11 +201,11 @@ To summarize, inside a page the pointers to the row are stored at the starts and
 
 <h2>What about Indexes</h2>
 
-<p>Indexes are also stored as files too and in the same directory as the tables. Indexes are an other story, I didn&#39;t cover them as it will make this post much longer than it&#39;s already. Even if indexes also have pages, they follow a different structures as they are b-tree&#39;s (by default).</p>
+<p>Indexes are also stored as files too and in the same directory as the tables. Indexes are an other story, I didn&#39;t cover them as it will make this post much longer. Even if indexes also have pages, they follow a different structures as they are b-tree&#39;s (by default).</p>
 
 <h2>Conclusion</h2>
 
-<p>I hope this post gave you enough information to have a better understand about how PostgreSQL may store your data. It has been useful for me to dive in the subject, it makes some other concepts or talks more easy to grasp but mainly fewer behaviors have to be accepted for granted. Much more could be said about the PostgreSQL storage and I hope that somebody more knowledgeable than me will undertake to make it understandable to beginners.</p>
+<p>I hope this post gave you enough information to have a better understand about how PostgreSQL may store your data. It has been useful for me to dive in the subject, it makes some other concepts or talks more easy to grasp but mainly fewer behaviors have to be accepted for granted. Much more could be said about PostgreSQL store and I hope that we will see more posts like this to make PostgreSQL internal parts understandable to beginners.</p>
 
 <h3>References:</h3>
 
