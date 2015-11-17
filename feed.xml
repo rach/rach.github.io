@@ -13,7 +13,7 @@
           <description>&lt;p&gt;I initially wrote this post for myself, I wanted to understand enough about the
 underlying physical storage to be able to grasp other concepts which can affect
 your database. This post is probably more aimed to people with similar interests,
-I will try to keep it accurate but I aim to make simpler and overlook some details.&lt;/p&gt;
+I will try to keep it accurate but the aim is to make it simpler to understand so I may overlook some details.&lt;/p&gt;
 </description>
         
         <pubDate>Mon, 09 Nov 2015 00:00:00 -0800</pubDate>
