@@ -700,7 +700,7 @@ Then what can you do? Based on what we have discussed above if Postgres fulfills
 
 ###Conclusion
 
-We have seen how to build a decent multi-language search engine based on a non-trivial document. This article is only an overview, but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to blog@lostpropertyhq.com
+We have seen how to build a decent multi-language search engine based on a non-trivial document. This article is only an overview, but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to [blog@rachbelaid.com](mailto:blog@rachbelaid.com)
 
 The full-text search feature included in Postgres is awesome and quite fast (enough). It will allow your application to grow without depending on another tool. Is Postgres Search the silver bullet? Probably not if your core business needs revolve around search. 
 
