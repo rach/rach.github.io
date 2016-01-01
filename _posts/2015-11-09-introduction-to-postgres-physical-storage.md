@@ -69,7 +69,7 @@ select oid, datname from pg_database WHERE datname = 'foo';
 
 {% endhighlight %}
 
-The other way to find the OID of a database is using the command line  `oid2name`. It's a utility program to examine the file structure used by PostgreSQL for more information on how to use it check the [documentation](oid2name_doc)
+The other way to find the OID of a database is using the command line  `oid2name`. It's a utility program to examine the file structure used by PostgreSQL for more information on how to use it check the [documentation][oid2name_doc]
 
 {% highlight sh %}
 $> oid2name
