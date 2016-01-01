@@ -3,6 +3,7 @@ title:  "Introduction PostgreSQL physical storage"
 date:   2015-11-09
 description: "Let's dive in how PostgreSQL store your data.
 This post try make the subject more easy to understand."
+share: true
 ---
 
 
