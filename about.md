@@ -9,7 +9,7 @@ My name is Rachid Belaid, I grew up and studied in Belgium. I recently moved to 
 
 I am an experienced software engineer who has worked with a number of technologies, with Python and Postgres in particular being my strong suit. I'm also using Go and Javascript on my day to day programming but love to learn about new technologies whenever better for some problems. I also experiment with technologies like Elixir and Haskell. 
 
-I will be looking for a job in San Francisco from February 2016, so if you are interested in my profile, you can have look at my [CV](http://bit.ly/rachbelaidcv) and contact me.
+I will be looking for a job in San Francisco from February 2016, so if you are interested in my profile, you can have a look at my [resume](http://bit.ly/rachbelaidcv) and contact me.
 
 ##OSS Projects
 
