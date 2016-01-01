@@ -7,19 +7,6 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
-        <title>Introducing Suma</title>
-        
-        
-          <description>&lt;p&gt;I&amp;#39;m excited to announce the release of the first version of &lt;a href=&quot;https://github.com/rach/suma&quot;&gt;Suma&lt;/a&gt;. Suma stands for &lt;strong&gt;S&lt;/strong&gt;hort &lt;strong&gt;U&lt;/strong&gt;RL &lt;strong&gt;M&lt;/strong&gt;anagment &lt;strong&gt;A&lt;/strong&gt;pp.
-The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:&lt;/p&gt;
-</description>
-        
-        <pubDate>Thu, 31 Dec 2015 00:00:00 -0800</pubDate>
-        <link>http://rachbelaid.com/introducing-suma</link>
-        <guid isPermaLink="true">http://rachbelaid.com/introducing-suma</guid>
-      </item>
-    
-      <item>
         <title>Introducing Pome</title>
         
         
@@ -30,6 +17,19 @@ Pome stands for &lt;strong&gt;Po&lt;/strong&gt;sgres &lt;strong&gt;Me&lt;/strong
         <pubDate>Thu, 31 Dec 2015 00:00:00 -0800</pubDate>
         <link>http://rachbelaid.com/introducing-pome</link>
         <guid isPermaLink="true">http://rachbelaid.com/introducing-pome</guid>
+      </item>
+    
+      <item>
+        <title>Introducing Suma</title>
+        
+        
+          <description>&lt;p&gt;I&amp;#39;m excited to announce the release of the first version of &lt;a href=&quot;https://github.com/rach/suma&quot;&gt;Suma&lt;/a&gt;. Suma stands for &lt;strong&gt;S&lt;/strong&gt;hort &lt;strong&gt;U&lt;/strong&gt;RL &lt;strong&gt;M&lt;/strong&gt;anagment &lt;strong&gt;A&lt;/strong&gt;pp.
+The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:&lt;/p&gt;
+</description>
+        
+        <pubDate>Wed, 30 Dec 2015 00:00:00 -0800</pubDate>
+        <link>http://rachbelaid.com/introducing-suma</link>
+        <guid isPermaLink="true">http://rachbelaid.com/introducing-suma</guid>
       </item>
     
       <item>
