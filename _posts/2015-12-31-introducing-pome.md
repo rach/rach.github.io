@@ -14,11 +14,11 @@ PostgreSQL is incredibly stable, especially with small databases. There are a lo
 
 This project follows 3 principles: Simplicity, Opinionated, Batteries included. 
 
-Simplicity, the project aims to be easy to deploy and run. This is why Pome can run as a binary. The project also aimed to feel like the `psql` command and use common arguments. 
+**Simplicity**, the project aims to be easy to deploy and run. This is why Pome can run as a binary. The project also aimed to feel like the `psql` command and use common arguments. 
 
-Opinionated, Pome has the goal to be pre-configured and analyse commonly useful metrics. We want the project to have sensible defaults. In the future, the tool will allow some level of configuration but without compromising Simplicity. 
+**Opinionated**, Pome has the goal to be pre-configured and analyse commonly useful metrics. We want the project to have sensible defaults. In the future, the tool will allow some level of configuration but without compromising Simplicity. 
 
-Batteries Included, Pome is built to be accessed via a web interface. The web app is shipped within the binary and Pome takes care of serving the assets (HTML, js, CSS). Pome is not built to be a public facing tool so performance into delivering assets was not a concern. It should be possible to run the frontend individually if it is of concern to you. Pome tries to not to rely on any dependency which cannot be shipped with the binary, and this is one of the reasons why Pome is stateless right now.
+**Batteries Included**, Pome is built to be accessed via a web interface. The web app is shipped within the binary and Pome takes care of serving the assets (HTML, js, CSS). Pome is not built to be a public facing tool so performance into delivering assets was not a concern. It should be possible to run the frontend individually if it is of concern to you. Pome tries to not to rely on any dependency which cannot be shipped with the binary, and this is one of the reasons why Pome is stateless right now.
 
 
 ##Motivations 
