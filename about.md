@@ -73,6 +73,7 @@ Some of the technologies used are:
 All Things Hair is a platform filled with hair styling tutorials from leading video bloggers which can be filtered and searched to find that perfect style for you to express yourself. The content isn’t arbitrary however, rather selected based on Google searches. All Things Hair is using Google data to see what customers are searching for and then asks bloggers to make videos to meet the demand.
 
 For this project, I did the followings:
+
 - Worked on Backend, Custom CMS and Admin
 - Implemented a document search engine. First using PostgreSQL FTS then using Elastic Search to support Japanese and Russian.
 
