@@ -1,6 +1,6 @@
 ---
 title:  "Introducing Suma"
-date:   2015-12-31
+date:   2015-12-30
 description: Suma is microservice to manage, control, preview links to external urls within your project.
 share: true
 ---
