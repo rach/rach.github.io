@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Keep your gems and npms inside your virtualenv</title>
+  <title>Introducing Suma</title>
   <link rel="shortcut icon" href="/assets/images/favicon.ico">
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
@@ -32,37 +32,60 @@
   <section id="wrapper" class="">
     <article class="post">
     <header>
-        <h1>Keep your gems and npms inside your virtualenv</h1>
-        <h2 class="headline">July 9, 2015</h2>
+        <h1>Introducing Suma</h1>
+        <h2 class="headline">December 31, 2015</h2>
     </header>
     <section id="post-body">
-        <p>Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  </p>
+        <p>I&#39;m excited to announce the release of the first version of Suma. Suma stands for <strong>S</strong>hort <strong>U</strong>RL <strong>M</strong>anagment <strong>A</strong>pp.
+The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:</p>
 
-<p>If you are using Python then you are probably used to work with <a href="https://pypi.python.org/pypi/virtualenv">virtualenv</a>. When working with virtualenv then the last thing that you want is installing dependencies globaly and you want to contain them per project.</p>
+<ul>
+<li>Creating short URL for external link within your application</li>
+<li>Extracting Title</li>
+<li>Capturing Screenshot from URL </li>
+<li>Blocking URL&#39;s</li>
+<li>Collecting clicks</li>
+</ul>
 
-<p>Taming your gems and npms to force them of existing only in your virtualen is very straightforward as <code>gem</code> and <code>npm</code> support environment variable to tell them where to find things.</p>
+<p>If your application needs to display external links then it&#39;s probably important that you don&#39;t redirect the user directly to the URL so you can fight spam, phishing attacks or inappropriate links.</p>
 
-<p>To do so, copy the lines below at the end of the ‘activate’ script of the virtualenv. If you are using <a href="https://pypi.python.org/pypi/virtualenvwrapper">virtualenvwrapper</a> then you copy it inside the ‘postactivate’ script.</p>
+<h2>Use cases</h2>
 
-<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nb">export </span><span class="nv">GEM_HOME</span><span class="o">=</span><span class="s2">&quot;$VIRTUAL_ENV/gems&quot;</span>
-<span class="nb">export </span><span class="nv">GEM_PATH</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;$GEM_HOME/bin:$PATH&quot;</span>
-<span class="nb">export </span><span class="nv">npm_config_prefix</span><span class="o">=</span><span class="nv">$VIRTUAL_ENV</span></code></pre></div>
+<p>If you don&#39;t understand directly what Suma is for, let&#39;s illustrate it with few use cases:</p>
 
-<p>And now inside your virtualenv, you can do :</p>
+<ul>
+<li>Public Feeds (eg: Twitter or FB like app) which allow user to post link publicly</li>
+<li>Reviews or comments allowing external links</li>
+<li>Display link title or screenshot to preview an external link within your application (eg: slack like app)</li>
+</ul>
 
-<div class="highlight"><pre><code class="language-sh" data-lang="sh">gem install &lt;package&gt;
-npm -g install &lt;package&gt;</code></pre></div>
+<p>To summarize: if your application allows external links from users, then Suma can be useful.</p>
 
-<p>And all yours gems/npms will be installed in your vitualenv and will be deleted with it.</p>
+<h2>Technology</h2>
 
-<p>If you are using <a href="http://direnv.net/">direnv</a> then you can copy the script into your <code>.envrc</code>.</p>
+<p>Suma is built in Python using <a href="http://www.pylonsproject.org/">Pyramid</a>. If you used to deploy a WSGI app then it should not take you more than few minutes to run it. Otherwise you may have to do some digging until I improve the documentation on deployment.</p>
 
-<p>This is an updated version of an older post from my previous blog but the infos is still actual as I&#39;m still using a similar technique when jungling between different projects. </p>
+<h2>What&#39;s next</h2>
 
-<p>This technique as the trade off of not doing any tidying after itself when deactivating the virtualenv and keeping the environment variables. </p>
+<p>There are a few things that I would like to add to this project:</p>
 
-<p>I&#39;m using virtualenwrapper so I developed 2 small plugins: <a href="https://pypi.python.org/pypi/virtualenv.npm">virtualenv.npm</a>, <a href="https://pypi.python.org/pypi/virtualenv.npm">virtualenv.npm</a>; which allows to do the same but also handle the cleaning when you deactivate the virtualenv.</p>
+<ul>
+<li>Download the favicon</li>
+<li>Customize the behavior of 404 (eg: redirect to a specific url)</li>
+<li>Add option to choose a 403 when a link has been banned</li>
+<li>Add alternative to Goose for extracting content using <a href="https://www.diffbot.com/">diffbot</a> or <a href="https://github.com/datalib/libextract">libextract</a></li>
+<li>Supporting css selector on the html via the API</li>
+</ul>
+
+<h2>License</h2>
+
+<p>Suma is licensed under Apache V2 license, the full license text can be found <a href="https://github.com/rach/suma/blob/master/LICENSE">here</a></p>
+
+<h2>Motivations</h2>
+
+<p>I had the need for a similar project in past and also recently for a new side project. </p>
+
+<p>Suma is at an early stage of development, but the goal of this project is to provide a microservice which covers the basic need for a company to protect their users from external links within their products. You can read more about the project in the <a href="https://github.com/rach/suma">README</a></p>
 
     </section>
 </article>
@@ -78,7 +101,7 @@ npm -g install &lt;package&gt;</code></pre></div>
     <section id="sharing">
         
   
-  <a class="twitter" href="https://twitter.com/intent/tweet?text=http://bit.ly/1TQFnVo - Keep your gems and npms inside your virtualenv by @rachbelaid"><span class="icon-twitter"></span></a>
+  <a class="twitter" href="https://twitter.com/intent/tweet?text=http://bit.ly/22vdUKE - Introducing Suma by @rachbelaid"><span class="icon-twitter"></span></a>
   <a class="facebook" href="#" onclick="
       window.open(
         'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),

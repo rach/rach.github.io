@@ -7,6 +7,32 @@
     <atom:link href="http://rachbelaid.com/feed.xml" rel="self" type="application/rss+xml" />
     
       <item>
+        <title>Introducing Suma</title>
+        
+        
+          <description>&lt;p&gt;I&amp;#39;m excited to announce the release of the first version of Suma. Suma stands for &lt;strong&gt;S&lt;/strong&gt;hort &lt;strong&gt;U&lt;/strong&gt;RL &lt;strong&gt;M&lt;/strong&gt;anagment &lt;strong&gt;A&lt;/strong&gt;pp.
+The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:&lt;/p&gt;
+</description>
+        
+        <pubDate>Thu, 31 Dec 2015 00:00:00 -0800</pubDate>
+        <link>http://rachbelaid.com/introducing-suma</link>
+        <guid isPermaLink="true">http://rachbelaid.com/introducing-suma</guid>
+      </item>
+    
+      <item>
+        <title>Introducing Pome</title>
+        
+        
+          <description>&lt;p&gt;I&amp;#39;m excited to announce that I just released the first version of &lt;a href=&quot;https://github.com/rach/pome&quot;&gt;Pome&lt;/a&gt;(version 0.1.0)
+Pome stands for &lt;strong&gt;Po&lt;/strong&gt;sgres &lt;strong&gt;Me&lt;/strong&gt;trics. Pome is a PosgreSQL Metrics Dashboard to keep track of the health of your database.&lt;/p&gt;
+</description>
+        
+        <pubDate>Thu, 31 Dec 2015 00:00:00 -0800</pubDate>
+        <link>http://rachbelaid.com/introducing-pome</link>
+        <guid isPermaLink="true">http://rachbelaid.com/introducing-pome</guid>
+      </item>
+    
+      <item>
         <title>Introduction PostgreSQL physical storage</title>
         
         
@@ -112,30 +138,6 @@ If you have some unique constraints on a table then you may hit some race condit
         <pubDate>Fri, 10 Jul 2015 00:00:00 -0700</pubDate>
         <link>http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</link>
         <guid isPermaLink="true">http://rachbelaid.com/virtualenvwrapper-plugins-for-gems-and-npms</guid>
-      </item>
-    
-      <item>
-        <title>Keep your gems and npms inside your virtualenv</title>
-        
-        
-          <description>&lt;p&gt;Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  &lt;/p&gt;
-</description>
-        
-        <pubDate>Thu, 09 Jul 2015 00:00:00 -0700</pubDate>
-        <link>http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</link>
-        <guid isPermaLink="true">http://rachbelaid.com/keep-your-gems-and-npms-inside-your-virtualenv</guid>
-      </item>
-    
-      <item>
-        <title>Handling Go workspace with direnv</title>
-        
-        
-          <description>&lt;p&gt;When I started to do some &lt;a href=&quot;https://golang.org/&quot;&gt;Go&lt;/a&gt; I quickly hit my first hurdle: &lt;a href=&quot;https://golang.org/doc/code.html#Workspaces&quot;&gt;The Go Workspace&lt;/a&gt;. The go tool is designed to work with code maintained in public repositories using the &lt;a href=&quot;https://en.wikipedia.org/wiki/Fully_qualified_domain_name&quot;&gt;FQDN&lt;/a&gt; and path as a kind of namespace and package name. Eg: &lt;code&gt;github.com/rach/project-x&lt;/code&gt;, where &lt;code&gt;github.com/rach&lt;/code&gt; is a kind of namespace enforce by a directory structure and &lt;code&gt;project-x&lt;/code&gt; is the package name also enforce by directory structure.&lt;/p&gt;
-</description>
-        
-        <pubDate>Sun, 28 Jun 2015 00:00:00 -0700</pubDate>
-        <link>http://rachbelaid.com/handling-go-workspace-with-direnv</link>
-        <guid isPermaLink="true">http://rachbelaid.com/handling-go-workspace-with-direnv</guid>
       </item>
     
   </channel>

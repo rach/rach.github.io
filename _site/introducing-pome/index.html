@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Keep your gems and npms inside your virtualenv</title>
+  <title>Introducing Pome</title>
   <link rel="shortcut icon" href="/assets/images/favicon.ico">
   <link rel="stylesheet" href="/assets/css/style.css">
   <link rel="alternate" type="application/rss+xml" title="My Blog" href="/rss.xml">
@@ -32,37 +32,54 @@
   <section id="wrapper" class="">
     <article class="post">
     <header>
-        <h1>Keep your gems and npms inside your virtualenv</h1>
-        <h2 class="headline">July 9, 2015</h2>
+        <h1>Introducing Pome</h1>
+        <h2 class="headline">December 31, 2015</h2>
     </header>
     <section id="post-body">
-        <p>Today, when building web application it becomes necessary to embracce multiple technologies to use the best tool for the task. Eg: Node for the assets pipeline.  </p>
+        <p>I&#39;m excited to announce that I just released the first version of <a href="https://github.com/rach/pome">Pome</a>(version 0.1.0)
+Pome stands for <strong>Po</strong>sgres <strong>Me</strong>trics. Pome is a PosgreSQL Metrics Dashboard to keep track of the health of your database.</p>
 
-<p>If you are using Python then you are probably used to work with <a href="https://pypi.python.org/pypi/virtualenv">virtualenv</a>. When working with virtualenv then the last thing that you want is installing dependencies globaly and you want to contain them per project.</p>
+<p>PostgreSQL is incredibly stable, especially with small databases. There are a lot PostgreSQL databases in the wild without a DBA to take care of them. In some cases, this could mean things are slowly getting worse. Luckily, a lot of things can be analyzed within postgres to get a health status, but it seemed to miss simple tool to run, which takes no time to install or without dependencies.</p>
 
-<p>Taming your gems and npms to force them of existing only in your virtualen is very straightforward as <code>gem</code> and <code>npm</code> support environment variable to tell them where to find things.</p>
+<h2>Goals</h2>
 
-<p>To do so, copy the lines below at the end of the ‘activate’ script of the virtualenv. If you are using <a href="https://pypi.python.org/pypi/virtualenvwrapper">virtualenvwrapper</a> then you copy it inside the ‘postactivate’ script.</p>
+<p>This project follows 3 principles: Simplicity, Opinionated, Batteries included. </p>
 
-<div class="highlight"><pre><code class="language-sh" data-lang="sh"><span class="nb">export </span><span class="nv">GEM_HOME</span><span class="o">=</span><span class="s2">&quot;$VIRTUAL_ENV/gems&quot;</span>
-<span class="nb">export </span><span class="nv">GEM_PATH</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
-<span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span><span class="s2">&quot;$GEM_HOME/bin:$PATH&quot;</span>
-<span class="nb">export </span><span class="nv">npm_config_prefix</span><span class="o">=</span><span class="nv">$VIRTUAL_ENV</span></code></pre></div>
+<p>Simplicity, the project aims to be easy to deploy and run. This is why Pome can run as a binary. The project also aimed to feel like the <code>psql</code> command and use common arguments. </p>
 
-<p>And now inside your virtualenv, you can do :</p>
+<p>Opinionated, Pome has the goal to be pre-configured and analyse commonly useful metrics. We want the project to have sensible defaults. In the future, the tool will allow some level of configuration but without compromising Simplicity. </p>
 
-<div class="highlight"><pre><code class="language-sh" data-lang="sh">gem install &lt;package&gt;
-npm -g install &lt;package&gt;</code></pre></div>
+<p>Batteries Included, Pome is built to be accessed via a web interface. The web app is shipped within the binary and Pome takes care of serving the assets (HTML, js, CSS). Pome is not built to be a public facing tool so performance into delivering assets was not a concern. It should be possible to run the frontend individually if it is of concern to you. Pome tries to not to rely on any dependency which cannot be shipped with the binary, and this is one of the reasons why Pome is stateless right now.</p>
 
-<p>And all yours gems/npms will be installed in your vitualenv and will be deleted with it.</p>
+<h2>Motivations</h2>
 
-<p>If you are using <a href="http://direnv.net/">direnv</a> then you can copy the script into your <code>.envrc</code>.</p>
+<p>Aside from the goals described above I wanted to start this project for few personal reasons:</p>
 
-<p>This is an updated version of an older post from my previous blog but the infos is still actual as I&#39;m still using a similar technique when jungling between different projects. </p>
+<ul>
+<li>PostgreSQL needs better and easier tooling. People may disagree but tooling is an important part of the success of any technology. Looking around I didn&#39;t find a tool sharing the same goals. A tool doesn&#39;t need to be perfect to start being useful but they need to be easy and enjoyable to use.</li>
+<li>Learning more about Go. I went with Go because it was suited to ship the tool as a binary. This project gave me a chance to dabble in Go for the first time and have a project to keep improving using this language.</li>
+<li>Improving my experience using React. I used React a while ago but I always mainly work in the backend world. I wanted a project to bring me up to date on the topic.</li>
+<li>Experimenting with D3. I had a few others project for which I was planning to use D3, so it felt best that I iron my skills out on a smaller project first.</li>
+</ul>
 
-<p>This technique as the trade off of not doing any tidying after itself when deactivating the virtualenv and keeping the environment variables. </p>
+<h2>License</h2>
 
-<p>I&#39;m using virtualenwrapper so I developed 2 small plugins: <a href="https://pypi.python.org/pypi/virtualenv.npm">virtualenv.npm</a>, <a href="https://pypi.python.org/pypi/virtualenv.npm">virtualenv.npm</a>; which allows to do the same but also handle the cleaning when you deactivate the virtualenv.</p>
+<p>Pome is licensed under Apache V2 license, the full license text can be found <a href="https://github.com/rach/pome/blob/master/LICENSE">here</a></p>
+
+<h2>What&#39;s next</h2>
+
+<p>There are a few features that I would like to add to make Pome more useful:</p>
+
+<ul>
+<li>Allow to configure when the metrics are collected</li>
+<li>Add few others metrics</li>
+</ul>
+
+<p>One of the big things that I will start to work on soon is a new UI mock up, to ensure that tool stay user friendly.
+You can read more about the future of Pome in the <a href="https://github.com/rach/pome">README</a> or within
+the opened <a href="https://github.com/rach/pome/issues">Issues</a>.</p>
+
+<p>This project is at a very early stage, and there are a lot of missing features, but I&#39;m using PostgreSQL a lot so I should be able to keep improving the project based on my own need at the start. I&#39;m also hoping that few people will get excited about having a project with these goals, will try it and/or start contributing.</p>
 
     </section>
 </article>
@@ -78,7 +95,7 @@ npm -g install &lt;package&gt;</code></pre></div>
     <section id="sharing">
         
   
-  <a class="twitter" href="https://twitter.com/intent/tweet?text=http://bit.ly/1TQFnVo - Keep your gems and npms inside your virtualenv by @rachbelaid"><span class="icon-twitter"></span></a>
+  <a class="twitter" href="https://twitter.com/intent/tweet?text=http://bit.ly/22vdUKC - Introducing Pome by @rachbelaid"><span class="icon-twitter"></span></a>
   <a class="facebook" href="#" onclick="
       window.open(
         'https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(location.href),
