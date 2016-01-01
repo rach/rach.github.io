@@ -5,7 +5,7 @@ description: Suma is microservice to manage, control, preview links to external 
 share: true
 ---
 
-I'm excited to announce the release of the first version of Suma. Suma stands for **S**hort **U**RL **M**anagment **A**pp.
+I'm excited to announce the release of the first version of [Suma](https://github.com/rach/suma). Suma stands for **S**hort **U**RL **M**anagment **A**pp.
 The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:
 
 - Creating short URL for external link within your application

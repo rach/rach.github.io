@@ -10,7 +10,7 @@
         <title>Introducing Suma</title>
         
         
-          <description>&lt;p&gt;I&amp;#39;m excited to announce the release of the first version of Suma. Suma stands for &lt;strong&gt;S&lt;/strong&gt;hort &lt;strong&gt;U&lt;/strong&gt;RL &lt;strong&gt;M&lt;/strong&gt;anagment &lt;strong&gt;A&lt;/strong&gt;pp.
+          <description>&lt;p&gt;I&amp;#39;m excited to announce the release of the first version of &lt;a href=&quot;https://github.com/rach/suma&quot;&gt;Suma&lt;/a&gt;. Suma stands for &lt;strong&gt;S&lt;/strong&gt;hort &lt;strong&gt;U&lt;/strong&gt;RL &lt;strong&gt;M&lt;/strong&gt;anagment &lt;strong&gt;A&lt;/strong&gt;pp.
 The role of Suma to manage external links and extract data from them. Suma is a small web service to do easily the followings:&lt;/p&gt;
 </description>
         
@@ -23,7 +23,7 @@ The role of Suma to manage external links and extract data from them. Suma is a 
         <title>Introducing Pome</title>
         
         
-          <description>&lt;p&gt;I&amp;#39;m excited to announce that I just released the first version of &lt;a href=&quot;https://github.com/rach/pome&quot;&gt;Pome&lt;/a&gt;(version 0.1.0)
+          <description>&lt;p&gt;I&amp;#39;m excited to announce that I just released the first version of &lt;a href=&quot;https://github.com/rach/pome&quot;&gt;Pome&lt;/a&gt; (version 0.1.0).
 Pome stands for &lt;strong&gt;Po&lt;/strong&gt;sgres &lt;strong&gt;Me&lt;/strong&gt;trics. Pome is a PosgreSQL Metrics Dashboard to keep track of the health of your database.&lt;/p&gt;
 </description>
         
