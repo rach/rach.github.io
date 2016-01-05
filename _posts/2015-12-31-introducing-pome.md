@@ -1,12 +1,12 @@
 ---
 title:  "Introducing Pome"
 date:   2015-12-31
-description: Pome is a PosgreSQL Metrics Dashboard to keep track of the health of your db. 
+description: Pome is a PostgreSQL Metrics Dashboard to keep track of the health of your db.
 share: true
 ---
 
 I'm excited to announce that I just released the first version of [Pome](https://github.com/rach/pome) (version 0.1.0).
-Pome stands for **Po**sgres **Me**trics. Pome is a PosgreSQL Metrics Dashboard to keep track of the health of your database.
+Pome stands for **Po**stgreSQL **Me**trics. Pome is a PostgreSQL Metrics Dashboard to keep track of the health of your database.
 
 PostgreSQL is incredibly stable, especially with small databases. There are a lot PostgreSQL databases in the wild without a DBA to take care of them. In some cases, this could mean things are slowly getting worse. Luckily, a lot of things can be analyzed within postgres to get a health status, but it seemed to miss simple tool to run, which takes no time to install or without dependencies.
 
