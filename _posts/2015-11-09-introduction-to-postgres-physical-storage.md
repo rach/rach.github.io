@@ -176,7 +176,7 @@ In our example, the table `bar` with the OID of `27741` will have the TOAST tabl
 
 ##Free Space map
 
-Each table has a [free space map][free_space_map], which stores information about free space available in the relation. The free space map is stored in a file named with the filenode number plus the suffix _fsm. 
+Each table has a [free space map][freespacemap], which stores information about free space available in the relation. The free space map is stored in a file named with the filenode number plus the suffix _fsm. 
 
 The values stored in the free space map are not exact. They're rounded to a precision of 1/256th of page size (32 bytes with default 8kb), and they're not kept fully up-to-date as tuples are inserted and updated. Some operations update the freespace map as deleting all the rows, but the VACCUM will update the freespace map for the future row being able to know which page they can fit.
 
@@ -226,3 +226,4 @@ I hope this post gave you enough information to have a better understand about h
 [heap_data_structure]: https://en.wikipedia.org/wiki/Heap_(data_structure)
 [pg_internal_slides]: http://momjian.us/main/writings/pgsql/internalpics.pdf
 [pg_about]: http://www.postgresql.org/about/
+[freespacemap]: https://github.com/postgres/postgres/blob/master/src/backend/storage/freespace/README
