@@ -33,7 +33,7 @@ The role of Suma to manage external links and extract data from them. Suma is a 
       </item>
     
       <item>
-        <title>Introduction PostgreSQL physical storage</title>
+        <title>Introduction to PostgreSQL physical storage</title>
         
         
           <description>&lt;p&gt;I initially wrote this post for myself, I wanted to understand enough about the
