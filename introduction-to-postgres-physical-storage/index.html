@@ -179,7 +179,7 @@ To summarize, inside a page the pointers to the row are stored at the starts and
 
 <h2>Free Space map</h2>
 
-<p>Each table has a [free space map][free<em>space</em>map], which stores information about free space available in the relation. The free space map is stored in a file named with the filenode number plus the suffix _fsm. </p>
+<p>Each table has a <a href="https://github.com/postgres/postgres/blob/master/src/backend/storage/freespace/README">free space map</a>, which stores information about free space available in the relation. The free space map is stored in a file named with the filenode number plus the suffix _fsm. </p>
 
 <p>The values stored in the free space map are not exact. They&#39;re rounded to a precision of 1/256th of page size (32 bytes with default 8kb), and they&#39;re not kept fully up-to-date as tuples are inserted and updated. Some operations update the freespace map as deleting all the rows, but the VACCUM will update the freespace map for the future row being able to know which page they can fit.</p>
 
