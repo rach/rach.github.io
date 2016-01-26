@@ -513,8 +513,21 @@ That explains why the <code>tsvector</code> results have fewer elements than the
 <p>Optimizing the search on one table is straight forward. PostgreSQL supports function based indexes so you can simply create a GIN index around the <code>tsvector()</code> function.</p>
 
 <div class="highlight"><pre><code class="language-sql" data-lang="sql"><span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_fts_post</span> <span class="k">ON</span> <span class="n">post</span> 
-<span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">,</span> <span class="n">title</span><span class="p">),</span><span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
-       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">,</span> <span class="n">content</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">));</span></code></pre></div>
+<span class="k">USING</span> <span class="n">gin</span><span class="p">((</span><span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">::</span><span class="n">regclass</span><span class="p">,</span> <span class="n">title</span><span class="p">),</span><span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> 
+       <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="k">language</span><span class="p">::</span><span class="n">regclass</span><span class="p">,</span> <span class="n">content</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">)));</span>
+
+<span class="c1">-- If this throws an IMMUTABLE error then you can use this workaround</span>
+
+<span class="k">CREATE</span> <span class="k">OR</span> <span class="k">REPLACE</span> <span class="k">FUNCTION</span> <span class="n">gin_fts_fct</span><span class="p">(</span><span class="n">title</span> <span class="nb">text</span><span class="p">,</span> <span class="n">content</span> <span class="nb">text</span><span class="p">,</span> <span class="k">language</span> <span class="nb">text</span><span class="p">)</span> 
+  <span class="k">RETURNS</span> <span class="n">tsvector</span>
+<span class="k">AS</span>
+<span class="err">$</span><span class="n">BODY</span><span class="err">$</span>
+    <span class="k">SELECT</span> <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="err">$</span><span class="mi">3</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="err">$</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;A&#39;</span><span class="p">)</span> <span class="o">||</span> <span class="n">setweight</span><span class="p">(</span><span class="n">to_tsvector</span><span class="p">(</span><span class="err">$</span><span class="mi">3</span><span class="p">::</span><span class="n">regconfig</span><span class="p">,</span> <span class="err">$</span><span class="mi">1</span><span class="p">),</span> <span class="s1">&#39;B&#39;</span><span class="p">);</span>
+<span class="err">$</span><span class="n">BODY</span><span class="err">$</span>
+<span class="k">LANGUAGE</span> <span class="k">sql</span>
+<span class="k">IMMUTABLE</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">INDEX</span> <span class="n">idx_fts_post</span> <span class="k">ON</span> <span class="n">post</span>  <span class="k">USING</span> <span class="n">gin</span><span class="p">(</span><span class="n">gin_fts_fct</span><span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="k">language</span><span class="p">));</span></code></pre></div>
 
 <p>GIN or GiST indexes? These two indexes could be subject of a blog post themselves. GiST can produce false matches which then requires a extra table row lookup to confirm the match. On the other hand, GIN is faster to query but bigger and slower to build.</p>
 
