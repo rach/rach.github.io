@@ -536,8 +536,21 @@ Optimizing the search on one table is straight forward. PostgreSQL supports func
 {% highlight sql %}
 
 CREATE INDEX idx_fts_post ON post 
-USING gin(setweight(to_tsvector(language, title),'A') || 
-	   setweight(to_tsvector(language, content), 'B'));
+USING gin((setweight(to_tsvector(language::regclass, title),'A') || 
+	   setweight(to_tsvector(language::regclass, content), 'B')));
+
+-- If this throws an IMMUTABLE error then you can use this workaround
+
+CREATE OR REPLACE FUNCTION gin_fts_fct(title text, content text, language text) 
+  RETURNS tsvector
+AS
+$BODY$
+    SELECT setweight(to_tsvector($3::regconfig, $1), 'A') || setweight(to_tsvector($3::regconfig, $1), 'B');
+$BODY$
+LANGUAGE sql
+IMMUTABLE;
+
+CREATE INDEX idx_fts_post ON post  USING gin(gin_fts_fct(title, content, language));
 
 {% endhighlight %}
 
