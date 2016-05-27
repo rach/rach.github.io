@@ -207,9 +207,17 @@ The visibility map simply stores one bit per heap page. A set bit means that all
 
 Indexes are also stored as files too and in the same directory as the tables. Indexes are an other story, I didn't cover them as it will make this post much longer. Even if indexes also have pages, they follow a different structures as they are b-tree's (by default).
 
+
+## Want to work on challenging projects using Postgres?
+
+If you are interested in working with Postgres on some interesting projects, come join me at [Opendoor](http://bit.ly/24bUVmn). We heavily use PostgreSQL for Data Processing, Web Development, Data Warehousing, ETLs, Data Science, and Geo Analysis. We are always looking for passionate Engineers and Data Scientists to join our team. Please reach out to our recruiter, [Ryan](mailto:ryan.jordan@opendoor.com) or apply via our [job page](http://bit.ly/25nigE9)
+
+
 ##Conclusion
 
 I hope this post gave you enough information to have a better understand about how PostgreSQL may store your data. It has been useful for me to dive in the subject, it makes some other concepts or talks more easy to grasp but mainly fewer behaviors have to be accepted for granted. Much more could be said about PostgreSQL store and I hope that we will see more posts like this to make PostgreSQL internal parts understandable to beginners.
+
+
 
 ###References:
 

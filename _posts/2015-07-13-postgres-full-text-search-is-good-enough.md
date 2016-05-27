@@ -711,7 +711,12 @@ I wouldn't. Without starting a flame war, MySQL full-text search features are ve
 Then what can you do? Based on what we have discussed above if Postgres fulfills your use case then think about moving to Postgres. This can easily be done via tools like [py-mysql2pgsql](https://github.com/philipsoutham/py-mysql2pgsql/). Or you can investigate more advanced solutions like SOLR and Elasticsearch. 
 
 
-###Conclusion
+### Want to work on challenging projects using Postgres?
+
+If you are interested in working with Postgres on some interesting projects, come join me at [Opendoor](http://bit.ly/24bUVmn). We heavily use PostgreSQL for Data Processing, Web Development, Data Warehousing, ETLs, Data Science, and Geo Analysis. We are always looking for passionate Engineers and Data Scientists to join our team. Please reach out to our recruiter, [Ryan](mailto:ryan.jordan@opendoor.com) or apply via our [job page](http://bit.ly/25nigE9)
+
+
+### Conclusion
 
 We have seen how to build a decent multi-language search engine based on a non-trivial document. This article is only an overview, but it should give you enough background and examples to get you started with your own. I may have made some mistakes in this article and I would appreciate if you report them to [blog@rachbelaid.com](mailto:blog@rachbelaid.com)
 
