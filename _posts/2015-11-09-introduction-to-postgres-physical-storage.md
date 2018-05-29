@@ -132,7 +132,7 @@ Once connected to your database via `psql`, you can list the list the systems ta
 
 ##How the rows are stored
 
-Every table stored as an array of pages of a fixed size (usually 8Kb).
+Every table is stored as an array of pages of a fixed size (usually 8Kb).
 In a table, all the pages are logically equivalent, so a particular item (row) can be stored in any page.
 
 The structure used to store the table is a heap file. Heap files are lists of unordered records of variable size. The heap file is structured as a collection of pages (or block), each containing a collection of items. The term item refers to a row that is stored on a page.
